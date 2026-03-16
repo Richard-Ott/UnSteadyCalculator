@@ -37,21 +37,22 @@ erosion rates are the same, but catchments have varying soil loss.
 * 'samebackground_samespike': a (multi-)spike soil loss, where all background
 erosion rates are the same and all soil loss heights.
 * 'curve' add a curve that mimicks the changes in erosion and that gets scaled by 
-a scaling factor. In the test data we take a pollen curve, calculate the mean tree
+a scaling factor. In the test data I take a pollen curve, calculate the mean tree
 pollen for certain times and inversely scale this with erosion rate. The more steps
 you allow in your curve the longer the computation will take.
 
 ## Production rates
-Production rates are calculated based on the online calculators formerly known as
-CRONUS-Earth online calculators v3. For computatinal efficiency the Stone 2000 scaling
-scheme is used, though in principle, the code could be adapted for more advanced scaling
-schemes.
-
-Muon production is calculated for every site by using the Balco 2017 model 1A with alpha = 1 and 
-calculating the full muon production depth profile. Subsequently, two expontials, 
-resembling negative muon capture and fast muons are fitted to the total muon production
-profile. Surface production rates and attenuation lengths of these expontentials are then
-used in the forward modelling of cosmogenic nuclide concentrations.
+Productions rates in the Unsteady Calculator are scaled using Stone (2000). 
+Rock density was set to 2.65 g/cm3 and the effective attenuation length for 
+spallation to 160 g/cm3 (Balco et al., 2008). Air pressure was calculated for
+the median latitude, longitude, and elevation of every catchment using ERA40 
+reanalysis data. Reference scaling constants for production at sea level were 
+taken from ‘the online calculator formerly known as Cronus-Earth online calculators’
+(Balco et al., 2008). Muon production rates were calculated using functions provided
+ by Balco (2017) for model 1A, evaluated at the median elevation of every catchment
+ to a depth of 25 m. The resulting  muon production profile was subsequently 
+approximated with two exponential functions, which were used for forward modelling 
+cosmogenic nuclide inventories. 
 
 Balco, G, Stone, JO, Lifton, NA, Dunai, TJ. 2008. A complete and easily accessible means 
 of calculating surface exposure ages or erosion rates from 10Be and 26Al measurements. 
@@ -63,32 +64,64 @@ https://doi.org/10.1016/j.quageo.2017.02.001.
 
 ## Forward model
 The forward model simulates cosmogenic nuclide concentrations as a set of exponentials
- that are being modified to depth cut-offs depending on the total amount of erosion occuring
- during an erosion event or time period. 
+that are being modified to depth cut-offs depending on the total amount of erosion occuring
+during an erosion event or time period. 
  
 ## Soil mixing
 The code can be run with and without mixing in the soil. Sol mixing is modelled as a well-mixed
-layer on top of the bedrock with a constant thickness through time. 
+layer on top of the bedrock with a constant thickness through time. For soil mixing, swith to the
+'soil_mixing' branch of this repository.
 
 ## Example scripts
-* 'Test_MCMC' Script that can generate test data for all erosion scenarios
-and then performs the parameter inversion. The inversion tries to recover the initial
-data to illustrate what parameter/sample combinations can theoretically be re-
-solved.
+* 'Test_inversion': Unified test runner for synthetic scenarios. In the user input
+	section of this script, select (1) inversion algorithm ('hmc' or 'gwmcmc'),
+	(2) algorithm profile ('quick', 'balanced', 'robust'), (3) priors, and
+	(4) scenario flags (true/false for each scenario).
 
-* 'WC_MCMC_inversion' shows the use with Crete 14C-10Be data
+* 'WC_inversion': Unified runner for the Western Crete dataset. The same
+	algorithm and profile selection applies here, while priors and scenario flags are
+	set directly in the user input section of the script.
+
+* 'inversion_build_config': Stores algorithm defaults and profile-specific tuning
+	settings. Keep priors and scenario selection in the main run scripts.
+
+* 'inversion_run_sampler': Backend sampler dispatcher used by both run scripts.
+	It runs either HMC or GWMCMC based on the selected algorithm.
 
 * 'Isolines_10Be_14C_stepchange': Calculates the analytical solution for erosion rate
 acceleration and a range of plausible times for the step change. Remember 1 samples -->
 2 equations and three unknowns (e1,e2,t), and hence all solutions lie on a line.
 
-* 'Isolines_10Be_14C_spike': same semi-analytical solutions for spike model 
+* 'Isolines_10Be_14C_spike': same analytical solutions for spike model 
 
 ## Inversion sampler
-This toolbox uses the 'gwmcmc' Bayesian Ensemble Sampler (Goodman and Weare, 2010).
-This algorithm converges faster on a solution than traditional MCMC samplers in 
-high-dimensional parameters space, as it is unaffected by affine tranformations 
-of space (linear transformations etc.).
+This toolbox supports two inversion samplers:
+
+* 'gwmcmc' Bayesian Ensemble Sampler (Goodman and Weare, 2010). This algorithm
+	converges faster on a solution than traditional MCMC samplers in high-dimensional
+	parameter spaces, as it is unaffected by affine transformations of space
+	(linear transformations etc.).
+	Use this sampler when you want a robust default with minimal tuning and good
+	global exploration from multiple walkers. Good for simple problems (few parameters).
+
+* MATLAB Hamiltonian Monte Carlo ('hmcSampler' / 'drawSamples'). This implementation
+	uses unconstrained parameter transforms internally and supports profile-based tuning
+	settings via 'inversion_build_config'.
+	Use this sampler for a higher sampling efficiency per accepted draw after tuning. This
+    is especially useful for complex problems with many parameters (e.g., 'step' scenario 
+    with 10 samples or more). 
+
+Short comparison:
+
+* GWMCMC: Usually easier to set up, often more forgiving for multimodal or rough
+	posteriors, but can need many model evaluations.
+
+* HMC: Can mix faster within one mode and provide efficient local exploration,
+	but is more sensitive to parameterization and tuning (step size, leapfrog steps,
+	burn-in).
+
+In both unified run scripts ('Test_inversion' and 'WC_inversion'), select the sampler
+with the 'algorithm' variable and select a tuning preset with 'profile'.
 
 Goodman, J., & Weare, J. (2010). Ensemble samplers with affine invariance. 
 Communications in Applied Mathematics and Computational Science, 5(1), 65-80.
