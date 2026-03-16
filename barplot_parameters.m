@@ -37,30 +37,39 @@ for g = 1:length(unique_groups)
 
     % Plot
     nexttile;
-    boxchart(group_data', 'Orientation', 'horizontal');
+    hPosterior = boxchart(group_data', 'Orientation', 'horizontal','MarkerStyle','none');
     yticklabels(group_vars);
     ax = gca;
     ax.TickLabelInterpreter = 'none';
     title(unique_groups{g});
     hold on;
+    
+    % Build legend dynamically
+    legendHandles = hPosterior;
+    legendLabels = {'posterior'};
 
     % Plot true values if given
     if ~isempty(p.Results.truevals)
         truevals = p.Results.truevals(group_idx);
-        plot(truevals, 1:length(group_vars), 'p', 'MarkerSize', 10, ...
+        hTrue = plot(truevals, 1:length(group_vars), 'p', 'MarkerSize', 10, ...
              'MarkerEdgeColor', 'r', 'MarkerFaceColor', 'r');
+        legendHandles(end+1) = hTrue;
+        legendLabels{end+1} = 'true value';
     end
 
     % Plot best model if given
     if ~isempty(p.Results.bestmodel)
         bestmodel = p.Results.bestmodel(group_idx);
-        plot(bestmodel, 1:length(group_vars), 'd', 'MarkerSize', 8, ...
+        hBest = plot(bestmodel, 1:length(group_vars), 'd', 'MarkerSize', 8, ...
              'MarkerEdgeColor', 'k', 'MarkerFaceColor', 'none');
+        legendHandles(end+1) = hBest;
+        legendLabels{end+1} = 'best fit';
     end
 
     if g == 1
-        legend({'posterior', 'true value', 'best fit'});
+        legend(legendHandles, legendLabels);
     end
+    xlim([group_range(1) group_range(end)])
 end
 
 end

@@ -83,8 +83,8 @@ Np=size(m,1);
 if p.ess>Np
     error('Effective Sample Size (ess) must be smaller than number of samples')
 end
-if M>20
-    % error('Too many dimensions. You probably don''t want to make that many subplots. ')
+if M>30
+    error('Too many dimensions. You probably don''t want to make that many subplots. ')
 end
 if isnan(p.scatter)
     p.scatter=Np<2000;
@@ -102,9 +102,7 @@ ix=isnan(p.support(2,:)); p.support(2,ix)=p.range(4,ix)+rng(ix)/4;
 for ii=length(p.names)+1:M
     p.names{ii}=sprintf('m_{%.0f}',ii);
 end
-% for ii=size(p.truth,2)+1:M
-%     p.truth(ii,:)=nan;
-% end
+
 if p.grid
     p.grid='on';
 else
@@ -114,6 +112,7 @@ end
 % clf
 
 newfig = figure('Units', 'normalized', 'Position', [0.05, 0.05, 0.8, 0.8]);
+
 H=nan(M);
 for r=1:M
     for c=1:max(r,M*p.fullmatrix)
@@ -182,8 +181,8 @@ for r=1:M
             set(gca,'XGrid',p.grid,'YGrid',p.grid)
             if diff(p.range(1:2,r))>0, set(gca,'Ylim',p.range(1:2,r)); end
         end
-        if r==M, xlabel(['^{ }' p.names{c} '_{ }']);end
-        if (c==1)&(r>1-p.fullmatrix), ylabel(['^{ }' p.names{r} '_{ }']);end
+        if r==M, xlabel([p.names{c}], 'Interpreter','none');end
+        if (c==1)&(r>1-p.fullmatrix), ylabel([ p.names{r}], 'Interpreter','none');end
         if diff(p.range(1:2,c))>0, set(gca,'Xlim',p.range(1:2,c)'); end
     end
     
