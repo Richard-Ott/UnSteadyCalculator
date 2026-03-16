@@ -5,7 +5,7 @@ addpath(genpath(pwd))
 
 %% USER INPUT ----------------------------------------------------------- %
 
-algorithm = 'gwmcmc';   % Choose algorithm: 'hmc' or 'gwmcmc'
+algorithm = 'hmc';   % Choose algorithm: 'hmc' or 'gwmcmc'
 profile = 'quick';   % Choose algorithm profile: 'quick', 'balanced', or 'robust' for manual adjustment check inversion_build_config.m
 export = false;
 filetag = 'test';    % Use 'test' to run test scenarios
