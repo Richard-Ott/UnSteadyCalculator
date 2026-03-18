@@ -9,21 +9,21 @@ addpath('.\\CosmoTools\\')
 %% USER INPUT ----------------------------------------------------------- %
 
 algorithm = 'hmc';   % Choose algorithm: 'hmc' or 'gwmcmc'
-profile = 'balanced';   % Choose algorithm profile: 'quick', 'balanced', or 'robust', for manual adjustment check inversion_build_config.m
+profile = 'quick';   % Choose algorithm profile: 'quick', 'balanced', or 'robust', for manual adjustment check inversion_build_config.m
 export = false;
 filetag = 'WC_soilmix';    % Use 'test' to run test scenarios
-zm = 0;            % soil mixing depth in cm (0 = no mixing)
+zm = 31;            % soil mixing depth in cm (0 = no mixing)
 
 % files 
 DEM  = GRIDobj('.\data\crete_clipped_utm.tif');
 file = 'data\WCdata_RFO.xlsx'; % AMS data
 
 % Priors 
-T = [10, 6e3];
-E_step  = [10, 10e3];
-E_spike = [10, 5e2];
-LOSS = [0.1, 250];
-CHG = [1, 100];
+T = [1, 6e3];
+E_step  = [10, 5e3];
+E_spike = [10, 3e2];
+LOSS = [0, 250];
+CHG = [0.1, 100];
 
 cfg = inversion_build_config(filetag, algorithm, profile);
 
@@ -63,9 +63,9 @@ for i = 1:numel(cfg.scenarios)
     [prior_range, var_names] = make_prior_and_varnames( ...
         scenario, T, E, LOSS, CHG, length(data.N10), cfg.nsteps);
 
-    % if strcmp(scenario, 'step')
-    %     prior_range(2:11,2) = 300;   % limit erosion in step model erosion rate 1
-    % end
+    if strcmp(scenario, 'step')
+        prior_range(2:11,2) = 300;   % limit erosion in step model erosion rate 1
+    end
 
     %% Constants, production, and forward model
     consts = make_constants();

@@ -57,7 +57,7 @@ switch cfg.profile
             cfg.hmc.useTuning = false;
             cfg.hmc.numTune = 0;
             cfg.hmc.numBurnin = 500;
-            cfg.hmc.numSamples = 3000;
+            cfg.hmc.numSamples = 2000;
             cfg.hmc.thinSize = 1;
             cfg.hmc.numLeapfrogSteps = 6;
             cfg.hmc.logEvalStride = 10;

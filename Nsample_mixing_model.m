@@ -69,12 +69,16 @@ Pbar = sum( P0 .* (L./(rho*Zm)) .* (1 - exp(-(rho*Zm)./L)) );
 end
 
 function phi = phi_term(r, beta, dt)
-x = (r - beta) * dt;
+% Exact kernel for source term Ak*exp(-beta*t) over one segment:
+% integral_0^dt exp(-r*(dt-tau)) * exp(-beta*tau) dtau
+% = (exp(-beta*dt)-exp(-r*dt)) / (r-beta)
 phi = zeros(size(beta));
+den = r - beta;
 tol = 1e-12;
-mask = abs(x) < tol;
-phi(~mask) = (1 - exp(-x(~mask))) ./ (r - beta(~mask));
-phi(mask)  = dt;
+mask = abs(den) < tol;
+phi(~mask) = (exp(-beta(~mask).*dt) - exp(-r*dt)) ./ den(~mask);
+% Stable limit as r -> beta: dt * exp(-beta*dt)
+phi(mask) = dt .* exp(-beta(mask).*dt);
 end
 
 function Ns = Nsurface_eq8_sumexp(P0, L, lambda, rho, Eseg, dtseg)

@@ -138,7 +138,8 @@ end
 
 
 if Al     
-    for s = 1:length(nSamp)
+    N26 = nan(nSamp,1);
+    for s = 1:nSamp
         % 26Al
         [N26(s), Ck26, N26_hist] = Nsample_mixing_model(P26(s,:), att_l_26(s,:), consts.l26, rho, zm, E(s,:), T_time_spans);
     end
