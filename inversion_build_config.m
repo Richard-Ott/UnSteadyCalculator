@@ -9,7 +9,7 @@ cfg.filetag = lower(filetag);
 cfg.algorithm = lower(algorithm);
 cfg.profile = lower(profile);
 
-if strcmp(cfg.filetag, 'test') 
+if contains(cfg.filetag, 'test')
     cfg.nsteps = 1;
     cfg.test.nSamples = 7;
 else % if not 'test' scenario
@@ -57,7 +57,7 @@ switch cfg.profile
             cfg.hmc.useTuning = false;
             cfg.hmc.numTune = 0;
             cfg.hmc.numBurnin = 500;
-            cfg.hmc.numSamples = 2000;
+            cfg.hmc.numSamples = 3000;
             cfg.hmc.thinSize = 1;
             cfg.hmc.numLeapfrogSteps = 6;
             cfg.hmc.logEvalStride = 10;

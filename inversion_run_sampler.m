@@ -46,6 +46,7 @@ switch algorithm
         stepSize = get_hmc_step_size(samplerCfg, scenario);
 
         for wix = 1:nWalks
+            disp(['running chain ' num2str(wix) ' out of ' num2str(nWalks)])
             startModel = mini(:,wix);
             startPoint = bounded_to_unbounded(startModel, lower_bounds, upper_bounds, logScaleMask);
             logpdf = @(u) transformed_logpdf(u, lower_bounds, upper_bounds, logScaleMask, logLikeFn);

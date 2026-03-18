@@ -6,16 +6,16 @@ addpath(genpath(pwd))
 %% USER INPUT ----------------------------------------------------------- %
 
 algorithm = 'hmc';   % Choose algorithm: 'hmc' or 'gwmcmc'
-profile = 'quick';   % Choose algorithm profile: 'quick', 'balanced', or 'robust' for manual adjustment check inversion_build_config.m
-export = false;
-filetag = 'test';    % Use 'test' to run test scenarios
-zm = 0;              % soil mixing depth in cm (0 = no mixing)
+profile = 'robust';   % Choose algorithm profile: 'quick', 'balanced', or 'robust' for manual adjustment check inversion_build_config.m
+export = true;
+filetag = '/Test_HMC_soilmix/test_soilmix';    % Use 'test' to run test scenarios
+zm = 50;              % soil mixing depth in cm (0 = no mixing)
 
 % Priors ------------------------------------------------------------------
 T = [1e2, 6e3];
 E = [0,   5e3];
 LOSS = [0, 200];
-CHG = [0.1, 50];
+CHG = [1, 50];
 
 cfg = inversion_build_config(filetag, algorithm, profile);
 
@@ -24,7 +24,7 @@ allScenarios = {'step', 'samestep', 'samebackground_step', 'samebackground_sames
     'spike', 'samespike', 'samebackground_spike', 'samebackground_samespike'};
 runScenario = [true, true, true, true, true, true, true, true];
 cfg.scenarios = allScenarios(runScenario);
-cfg.pause = true; % do you want to pause at the plotting stage, before computing the next scenario?
+cfg.pause = false; % do you want to pause at the plotting stage, before computing the next scenario?
 
 % END USER INPUT ---------------------------------------------------------%
 

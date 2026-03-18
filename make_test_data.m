@@ -10,8 +10,10 @@ testdata.altitude=repmat(500,n,1);
 switch scenario
     case 'step'
         testdata.t = [1500];                         % step change timing
+        % testdata.e = [20,50,100,300,500,4000,5000,...    % old erosion rates of different catchments mm/ka
+        %               20,50,100,300,500,4000,5000];% new erosion rates of catchments
         testdata.e = [20,50,100,300,50,400,50,...    % old erosion rates of different catchments mm/ka
-                      1000,2000,4000,200,50,100,500];% new erosion rates of catchments
+              1000,2000,4000,200,50,100,500];% new erosion rates of catchments
         testdata.changeVariable = [];                % this is variable for convinience, so that I dont need a swith between loss/change or no change factor later on
     case 'samestep'
         testdata.t = [1500];                        % step change timing
