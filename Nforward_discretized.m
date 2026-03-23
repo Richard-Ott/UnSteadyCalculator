@@ -124,24 +124,79 @@ P26(:,3) = sp.P26_fm;
 % for speed in the inversion.
 Al = any(Nlogical(:,3));
 
-% empty concentration arrays
-N10 = nan(nSamp,1);
-N14 = nan(nSamp,1);
-% runf forward model and calculate concentrations -------------------------
-for s = 1 : nSamp
-    % 10Be
-    [N10(s), Ck10, N10_hist] = Nsample_mixing_model(P10(s,:), att_l_10(s,:), consts.l10, rho, zm, E(s,:), T_time_spans);
+if zm == 0
+    % Use the original no-mixing formulation exactly. This path correctly
+    % applies depth cutoffs in t_depths and therefore preserves spike-loss
+    % sensitivity at zm = 0.
+    N10 = 0;
+    N14 = 0;
 
-    % 14C
-    [N14(s), Ck14, N14_hist] = Nsample_mixing_model(P14(s,:), att_l_14(s,:), consts.l14, rho, zm, E(s,:), T_time_spans);
-end
+    for i = 1:3
+        N10i = 0;
+        N14i = 0;
 
+        for j = 1:length(T)
+            beta10 = rho .* E(:,j) ./ att_l_10(:,i) + consts.l10;
+            beta14 = rho .* E(:,j) ./ att_l_14(:,i) + consts.l14;
 
-if Al     
-    N26 = nan(nSamp,1);
-    for s = 1:nSamp
-        % 26Al
-        [N26(s), Ck26, N26_hist] = Nsample_mixing_model(P26(s,:), att_l_26(s,:), consts.l26, rho, zm, E(s,:), T_time_spans);
+            N10_segment = P10(:,i)./beta10 .* ...
+                exp(-(rho .* t_depths(:,j) ./ att_l_10(:,i))) .* ...
+                (1 - exp(-beta10.*T_time_spans(j)));
+
+            N14_segment = P14(:,i)./beta14 .* ...
+                exp(-(rho .* t_depths(:,j) ./ att_l_14(:,i))) .* ...
+                (1 - exp(-beta14.*T_time_spans(j)));
+
+            N10i = N10i .* exp(-consts.l10.*T_time_spans(j)) + N10_segment;
+            N14i = N14i .* exp(-consts.l14.*T_time_spans(j)) + N14_segment;
+        end
+
+        N10 = N10 + N10i;
+        N14 = N14 + N14i;
+    end
+
+    if Al
+        N26 = 0;
+        for i = 1:3
+            N26i = 0;
+            for j = 1:length(T)
+                beta26 = rho .* E(:,j) ./ att_l_26(:,i) + consts.l26;
+
+                N26_segment = P26(:,i)./beta26 .* ...
+                    exp(-(rho .* t_depths(:,j) ./ att_l_26(:,i))) .* ...
+                    (1 - exp(-beta26.*T_time_spans(j)));
+
+                N26i = N26i .* exp(-consts.l26.*T_time_spans(j)) + N26_segment;
+            end
+            N26 = N26 + N26i;
+        end
+    end
+else
+    % Mixed-layer forward model.
+
+    % For spike scenarios: extract per-sample instantaneous loss (cm).
+    % For all other scenarios spike_loss stays zero, so Nsample_mixing_model is unchanged.
+    if ismember(scenario, {'spike','samespike','samebackground_spike','samebackground_samespike'})
+        sl = reshape(loss(:,1), [], 1);       % first (only) spike loss, nSamp×1 or scalar
+        if numel(sl) == 1
+            sl = repmat(sl, nSamp, 1);
+        end
+    else
+        sl = zeros(nSamp, 1);
+    end
+
+    N10 = nan(nSamp,1);
+    N14 = nan(nSamp,1);
+    for s = 1 : nSamp
+        [N10(s), ~, ~] = Nsample_mixing_model(P10(s,:), att_l_10(s,:), consts.l10, rho, zm, E(s,:), T_time_spans, sl(s));
+        [N14(s), ~, ~] = Nsample_mixing_model(P14(s,:), att_l_14(s,:), consts.l14, rho, zm, E(s,:), T_time_spans, sl(s));
+    end
+
+    if Al
+        N26 = nan(nSamp,1);
+        for s = 1:nSamp
+            [N26(s), ~, ~] = Nsample_mixing_model(P26(s,:), att_l_26(s,:), consts.l26, rho, zm, E(s,:), T_time_spans, sl(s));
+        end
     end
 end
 

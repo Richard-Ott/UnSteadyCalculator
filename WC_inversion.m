@@ -21,16 +21,16 @@ file = 'data\WCdata_RFO.xlsx'; % AMS data
 % Priors 
 T = [1, 6e3];
 E_step  = [10, 5e3];
-E_spike = [10, 3e2];
-LOSS = [0, 250];
-CHG = [0.1, 100];
+E_spike = [10, 5e2];
+LOSS = [1, 250];
+CHG = [1, 100];
 
 cfg = inversion_build_config(filetag, algorithm, profile);
 
 % Scenario selection in main script using true/false flags.
 allScenarios = {'step', 'samestep', 'samebackground_step', 'samebackground_samestep', ...
     'spike', 'samespike', 'samebackground_spike', 'samebackground_samespike'};
-runScenario = [true, false, false, false, true, false, false, false];
+runScenario = [false, false, false, false, true, false, false, false];
 cfg.scenarios = allScenarios(runScenario);
 cfg.pause = true; % do you want to pause at the plotting stage, before computing the next scenario?
 

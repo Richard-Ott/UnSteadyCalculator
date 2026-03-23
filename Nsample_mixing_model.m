@@ -1,10 +1,12 @@
-function [Nm, Ck, Nm_hist] = Nsample_mixing_model(P0, L, lambda, rho, Zm, Eseg, dtseg)
+function [Nm, Ck, Nm_hist] = Nsample_mixing_model(P0, L, lambda, rho, Zm, Eseg, dtseg, spike_loss)
 % Nsample_mixing_model
 % Analytic mixed-layer (thickness Zm) surface concentration, Eq. 8 style.
 % UNITS:
 %   P0: atoms g^-1 yr^-1  |  L: g cm^-2  |  lambda: yr^-1  |  rho: g cm^-3
 %   Zm: cm                |  Eseg: cm yr^-1                |  dtseg: yr
+%   spike_loss: cm        (instantaneous overburden removal at prehistory->record transition)
 
+if nargin < 8, spike_loss = 0; end
 S = numel(Eseg);
 
 % ---------- Zm == 0: EXACTLY match master ----------
@@ -32,6 +34,22 @@ if isinf(dtseg(1))
     r1    = lambda + E1/Zm;
     Nm    = (Pbar1 + (E1/Zm)*Nb_ss) / r1;
     start_idx = 2;                                  % proceed with next segments
+
+    % ---- Apply instantaneous spike loss at the prehistory->record transition ----
+    if spike_loss > 0
+        exp_shift = exp(-rho * spike_loss ./ L);    % depth-shift factor for substrate
+        if spike_loss >= Zm
+            % Entire mixed layer is stripped; new layer forms from substrate now at surface
+            Ck = Ck .* exp_shift;
+            Nm = sum( Ck .* (L./(rho*Zm)) .* (1 - exp_fac) );
+        else
+            % Partial removal: (Zm-loss)/Zm of old mixed layer + substrate upwelling
+            % substrate contribution = integral_{Zm}^{Zm+loss} N_b(z) dz / Zm
+            sub_contrib = sum( Ck .* exp_fac .* (L./(rho*Zm)) .* (1 - exp_shift) );
+            Ck = Ck .* exp_shift;
+            Nm = ((Zm - spike_loss)/Zm) * Nm + sub_contrib;
+        end
+    end
 else
     % If no Inf prehistory is provided, start from zeros
     Ck = zeros(size(P0));

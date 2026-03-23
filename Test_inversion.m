@@ -9,7 +9,7 @@ algorithm = 'hmc';   % Choose algorithm: 'hmc' or 'gwmcmc'
 profile = 'robust';   % Choose algorithm profile: 'quick', 'balanced', or 'robust' for manual adjustment check inversion_build_config.m
 export = true;
 filetag = '/Test_HMC_soilmix/test_soilmix';    % Use 'test' to run test scenarios
-zm = 50;              % soil mixing depth in cm (0 = no mixing)
+zm = 31;              % soil mixing depth in cm (0 = no mixing)
 
 % Priors ------------------------------------------------------------------
 T = [1e2, 6e3];
