@@ -20,7 +20,7 @@ scenario = 'step'; % 'step' or 'spike'
 dataFile = 'data\WCdata_RFO.xlsx';
 demFile = '.\data\crete_clipped_utm.tif';
 
-t = 1e2:1e2:1e4;              % years since step/spike event
+t = 1e2:2e2:1e4;              % years since step/spike event
 
 %% LOAD DATA ------------------------------------------------------------ %
 
@@ -30,6 +30,26 @@ DEM = GRIDobj(demFile);
 %% CALCULATE ISOLINES --------------------------------------------------- %
 
 [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS, DEM, t, scenario);
+
+% for spike scenarios, one often reaches apoint where the spike is huge
+% (>1500) and erases almost the entire production profile. From that point
+% back in time, you won;t be able to constrain a solution. Here I
+% discard all of these values
+if strcmp(scenario, 'spike')
+    maxLossCm = 1000;
+    for i = 1:size(p2,1)
+        exceed = (p2(i,:) > maxLossCm) | (p2up(i,:) > maxLossCm) | (p2low(i,:) > maxLossCm);
+        firstBad = find(exceed, 1, 'first');
+        if ~isempty(firstBad)
+            p1(i,firstBad:end) = nan;
+            p2(i,firstBad:end) = nan;
+            p1up(i,firstBad:end) = nan;
+            p2up(i,firstBad:end) = nan;
+            p1low(i,firstBad:end) = nan;
+            p2low(i,firstBad:end) = nan;
+        end
+    end
+end
 
 %% PLOT ----------------------------------------------------------------- %
 
@@ -88,4 +108,4 @@ switch scenario
         legend(labels, 'Interpreter', 'none', 'Location', 'best')
 end
 
-ylim([0 350])
+% ylim([0 350])
