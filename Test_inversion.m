@@ -6,7 +6,7 @@ addpath(genpath(pwd))
 %% USER INPUT ----------------------------------------------------------- %
 
 algorithm = 'hmc';   % Choose algorithm: 'hmc' or 'gwmcmc'
-profile = 'robust';   % Choose algorithm profile: 'quick', 'balanced', or 'robust' for manual adjustment check inversion_build_config.m
+profile = 'quick';   % Choose algorithm profile: 'quick', 'balanced', or 'robust' for manual adjustment check inversion_build_config.m
 export = true;
 filetag = '/Test_HMC_soilmix/test_soilmix';    % Use 'test' to run test scenarios
 zm = 31;              % soil mixing depth in cm (0 = no mixing)

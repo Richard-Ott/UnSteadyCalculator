@@ -2,7 +2,6 @@ clear
 clc
 close all
 
-addpath('.\\online-calculators-v3\\')
 addpath('.\\Matlab MCMC ensemble sampler\\')
 addpath('.\\CosmoTools\\')
 

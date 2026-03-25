@@ -32,14 +32,9 @@ function [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario,zm)
 %     inherited nuclides are effectively removed, so pre-spike history is
 %     weakly constrained and solutions can become unstable/non-unique.
 
-if nargin < 4
-    error('calc_isoline requires SAMS, DEM, t, and scenario.');
-end
+
 if nargin < 5 || isempty(zm)
     zm = 0;
-end
-if ~ismember(scenario, {'step','spike'})
-    error('scenario must be ''step'' or ''spike''.');
 end
 
 SAMS = cosmowatersheds(SAMS,DEM);  % find catchments

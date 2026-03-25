@@ -6,9 +6,6 @@ function [sp] = sample_parameters(lat,lon,altitude,consts)
 %
 % Richard Ott, 2024
 
-addpath('C:\Users\rott\OneDrive - UvA\Richard\PhD_ETH\matlab\CRONUS cosmo calculation\cronus 3.0\online-calculators-v3')
-addpath('C:\Users\rott\OneDrive - UvA\Richard\PhD_ETH\matlab\CRONUS cosmo calculation\cronus 3.0\online-calculators-v3\data')
-
 sp.pressure = ERA40atm(lat, lon, altitude);  % atmospheric pressure
 
 if isrow(sp.pressure)   % make sure its a column vector
