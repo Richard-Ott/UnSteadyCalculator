@@ -1,7 +1,7 @@
-function [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario)
+function [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario,zm)
 %CALC_ISOLINE Compute 10Be-14C isolines for step or spike erosion scenarios.
 %
-%   [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario)
+%   [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario,zm)
 %
 %   INPUTS
 %   SAMS      Sample struct array (from cosmosampleread) with observed
@@ -12,6 +12,7 @@ function [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario)
 %   scenario  'step'  -> solve for [E1 E2] where E changes from E1 to E2.
 %             'spike' -> solve for [E loss] where E is background erosion and
 %                        loss is one-time stripped thickness.
+%   zm        Soil-mixing depth in cm. Use zm = 0 for no mixing.
 %
 %   OUTPUTS
 %   p1,p2     Best-fit parameters at each sample x time location.
@@ -33,6 +34,9 @@ function [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario)
 
 if nargin < 4
     error('calc_isoline requires SAMS, DEM, t, and scenario.');
+end
+if nargin < 5 || isempty(zm)
+    zm = 0;
 end
 if ~ismember(scenario, {'step','spike'})
     error('scenario must be ''step'' or ''spike''.');
@@ -96,7 +100,7 @@ for i = 1:n
         tStep = [t(j), 0];
 
         % Best-fit isoline
-        fun = @(x) misfit_model(x, scenario, tStep, sp, consts, NlogicalRow, obs);
+        fun = @(x) misfit_model(x, scenario, tStep, sp, consts, zm, NlogicalRow, obs);
         % Combine default, warm, and basin-probing starts; keep best misfit.
         starts = build_starts(scenario, x0, xPrev, LB, UB);
         [sol,exitflag] = optimize_multistart(fun, starts, LB, UB, options);
@@ -108,7 +112,7 @@ for i = 1:n
         p1(i,j) = sol(1); p2(i,j) = sol(2);
 
         % Lower envelope (obs + sigma)
-        funLow = @(x) misfit_model(x, scenario, tStep, sp, consts, NlogicalRow, obs + sig);
+        funLow = @(x) misfit_model(x, scenario, tStep, sp, consts, zm, NlogicalRow, obs + sig);
         startsLow = build_starts(scenario, x0, xPrevLow, LB, UB);
         [solLow,exitflag] = optimize_multistart(funLow, startsLow, LB, UB, options);
         if exitflag <= 0
@@ -119,7 +123,7 @@ for i = 1:n
         p1low(i,j) = solLow(1); p2low(i,j) = solLow(2);
 
         % Upper envelope (obs - sigma)
-        funUp = @(x) misfit_model(x, scenario, tStep, sp, consts, NlogicalRow, obs - sig);
+        funUp = @(x) misfit_model(x, scenario, tStep, sp, consts, zm, NlogicalRow, obs - sig);
         startsUp = build_starts(scenario, x0, xPrevUp, LB, UB);
         [solUp,exitflag] = optimize_multistart(funUp, startsUp, LB, UB, options);
         if exitflag <= 0
@@ -154,12 +158,12 @@ p1low(invalid(p1low)) = nan; p2low(invalid(p2low)) = nan;
 end
 
 
-function err = misfit_model(x, scenario, tStep, sp, consts, NlogicalRow, obs)
+function err = misfit_model(x, scenario, tStep, sp, consts, zm, NlogicalRow, obs)
 switch scenario
     case 'step'
-        pred = Nforward_discretized([x(1) x(2)], tStep, sp, consts, 'step', NlogicalRow);
+        pred = Nforward_discretized([x(1) x(2)], tStep, sp, consts, zm, 'step', NlogicalRow);
     case 'spike'
-        pred = Nforward_discretized(x(1), tStep, sp, consts, 'spike', NlogicalRow, x(2));
+        pred = Nforward_discretized(x(1), tStep, sp, consts, zm, 'spike', NlogicalRow, x(2));
 end
 % L1 objective keeps the inversion robust to single-nuclide outliers.
 err = sum(abs(pred(:) - obs(:)));
