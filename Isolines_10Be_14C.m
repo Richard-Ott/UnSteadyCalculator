@@ -20,7 +20,7 @@ scenario = 'step'; % 'step' or 'spike'
 dataFile = 'data\WCdata_RFO.xlsx';
 demFile = '.\data\crete_clipped_utm.tif';
 
-t = 1e2:2e2:1e4;              % years since step/spike event
+t = 1e2:1e2:1e4;              % years since step/spike event
 
 %% LOAD DATA ------------------------------------------------------------ %
 
@@ -88,4 +88,4 @@ switch scenario
         legend(labels, 'Interpreter', 'none', 'Location', 'best')
 end
 
-ylim([0 200])
+ylim([0 350])

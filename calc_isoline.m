@@ -2,13 +2,47 @@ function [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario)
 %CALC_ISOLINE Compute 10Be-14C isolines for step or spike erosion scenarios.
 %
 %   [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario)
-
-if nargin < 4
-    error('calc_isoline requires SAMS, DEM, t, and scenario.');
-end
-if ~ismember(scenario, {'step','spike'})
-    error('scenario must be ''step'' or ''spike''.');
-end
+%
+%   This function solves, for each sample and each event age in t, the
+%   two-parameter model that matches observed 10Be and 14C concentrations.
+%   It supports:
+%     - 'step'  : [E1, E2] where E changes from E1 to E2 at age t.
+%     - 'spike' : [E, loss] with constant background erosion E and a one-time
+%                 stripping event (loss, cm) at age t.
+%
+%   Inputs
+%   ------
+%   SAMS : struct array
+%       Sample structure from cosmosampleread containing at least:
+%       N10, N14, N10sigma, N14sigma and ID fields.
+%   DEM : GRIDobj
+%       DEM used by cosmowatersheds to delineate catchments and derive
+%       representative latitude/longitude/elevation values.
+%   t : vector (yr)
+%       Event ages (years before present) at which isolines are solved.
+%   scenario : char or string
+%       'step' or 'spike'.
+%
+%   Outputs
+%   -------
+%   p1, p2 : nSample x nTime arrays
+%       Best-fit parameters for each sample and event age.
+%       step  : p1 = E1 (mm/ka), p2 = E2 (mm/ka)
+%       spike : p1 = E  (mm/ka), p2 = loss (cm)
+%   p1up, p2up : nSample x nTime arrays
+%       Best-fit parameters using (obs - sigma), one uncertainty envelope.
+%   p1low, p2low : nSample x nTime arrays
+%       Best-fit parameters using (obs + sigma), one uncertainty envelope.
+%
+%   Notes
+%   -----
+%   - The objective is an L1 misfit between observed and modeled nuclides.
+%   - A multistart optimization with warm starts is used to reduce
+%     local-minimum jumps along age trajectories.
+%   - In spike mode, very old-age tails are truncated when solutions become
+%     effectively non-informative (high-loss saturation/instability).
+%
+% Richard Ott, 2024-2026
 
 SAMS = cosmowatersheds(SAMS,DEM);
 
