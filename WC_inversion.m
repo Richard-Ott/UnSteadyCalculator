@@ -12,7 +12,7 @@ algorithm = 'hmc';   % Choose algorithm: 'hmc' or 'gwmcmc'
 profile = 'quick';   % Choose algorithm profile: 'quick', 'balanced', or 'robust', for manual adjustment check inversion_build_config.m
 export = false;
 filetag = 'WC_soilmix';    % Use 'test' to run test scenarios
-zm = 31;            % soil mixing depth in cm (0 = no mixing)
+zm = 200;            % soil mixing depth in cm (0 = no mixing)
 
 % files 
 DEM  = GRIDobj('.\data\crete_clipped_utm.tif');
@@ -21,7 +21,7 @@ file = 'data\WCdata_RFO.xlsx'; % AMS data
 % Priors 
 T = [1, 6e3];
 E_step  = [10, 5e3];
-E_spike = [10, 5e2];
+E_spike = [10, 3e2];
 LOSS = [1, 250];
 CHG = [1, 100];
 
@@ -30,10 +30,9 @@ cfg = inversion_build_config(filetag, algorithm, profile);
 % Scenario selection in main script using true/false flags.
 allScenarios = {'step', 'samestep', 'samebackground_step', 'samebackground_samestep', ...
     'spike', 'samespike', 'samebackground_spike', 'samebackground_samespike'};
-runScenario = [false, false, false, false, true, false, false, false];
+runScenario = [true, false, false, false, true, false, false, false];
 cfg.scenarios = allScenarios(runScenario);
 cfg.pause = true; % do you want to pause at the plotting stage, before computing the next scenario?
-
 
 %% Basin geometry and sample metadata
 SAMS = cosmosampleread(file);

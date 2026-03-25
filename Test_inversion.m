@@ -22,7 +22,7 @@ cfg = inversion_build_config(filetag, algorithm, profile);
 % Scenario selection. Select which scenarios to run:
 allScenarios = {'step', 'samestep', 'samebackground_step', 'samebackground_samestep', ...
     'spike', 'samespike', 'samebackground_spike', 'samebackground_samespike'};
-runScenario = [true, true, true, true, true, true, true, true];
+runScenario = [false, false, false, false, false, false, false, true];
 cfg.scenarios = allScenarios(runScenario);
 cfg.pause = false; % do you want to pause at the plotting stage, before computing the next scenario?
 

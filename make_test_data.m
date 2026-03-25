@@ -10,8 +10,6 @@ testdata.altitude=repmat(500,n,1);
 switch scenario
     case 'step'
         testdata.t = [1500];                         % step change timing
-        % testdata.e = [20,50,100,300,500,4000,5000,...    % old erosion rates of different catchments mm/ka
-        %               20,50,100,300,500,4000,5000];% new erosion rates of catchments
         testdata.e = [20,50,100,300,50,400,50,...    % old erosion rates of different catchments mm/ka
               1000,2000,4000,200,50,100,500];% new erosion rates of catchments
         testdata.changeVariable = [];                % this is variable for convinience, so that I dont need a swith between loss/change or no change factor later on
@@ -41,9 +39,9 @@ switch scenario
         testdata.e =   [50];                            % background erosion rates of different catchments
         testdata.loss = [50,10,100,30,20,50,5];         % soil loss in cm
     case 'samebackground_samespike'
-        testdata.t =   [1500,500];                      % soil loss timing
+        testdata.t =   [1500];                      % soil loss timing
         testdata.e =   [50];                            % background erosion rates of different catchments
-        testdata.loss = [10,20];                        % soil loss in cm
+        testdata.loss = [20];                        % soil loss in cm
 
     case 'curve'
         % apply pollen data as test
