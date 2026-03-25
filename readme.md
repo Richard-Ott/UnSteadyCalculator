@@ -82,17 +82,9 @@ layer on top of the bedrock with a constant thickness through time. For soil mix
 	algorithm and profile selection applies here, while priors and scenario flags are
 	set directly in the user input section of the script.
 
-* 'inversion_build_config': Stores algorithm defaults and profile-specific tuning
-	settings. Keep priors and scenario selection in the main run scripts.
-
-* 'inversion_run_sampler': Backend sampler dispatcher used by both run scripts.
-	It runs either HMC or GWMCMC based on the selected algorithm.
-
-* 'Isolines_10Be_14C_stepchange': Calculates the analytical solution for erosion rate
-acceleration and a range of plausible times for the step change. Remember 1 samples -->
-2 equations and three unknowns (e1,e2,t), and hence all solutions lie on a line.
-
-* 'Isolines_10Be_14C_spike': same analytical solutions for spike model 
+* 'Isolines_10Be_14C': Calculates the analytical solution for step and spike
+scenarios. Remember: 1 samples --> 2 equations and three unknowns (e1,e2,t), 
+and hence all parameter combinations follow a line, which this script calculates.
 
 ## Inversion sampler
 This toolbox supports two inversion samplers:
@@ -129,7 +121,7 @@ Communications in Applied Mathematics and Computational Science, 5(1), 65-80.
 
 All Rights Reserved
 
-Copyright (c) UnSteadyErosion 2024 Richard Ott
+Copyright (c) UnSteadyErosion 2026 Richard Ott
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
