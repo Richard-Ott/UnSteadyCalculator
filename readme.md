@@ -8,6 +8,9 @@ All models can be run for a single sample as well as a suite of data. However,
 the inversion cannot constrain meaningful results for a single sample, because there
 are less data than parameters (run isoline codes scripts for single sample).
 
+The code package also includes function to calculate standard apparent erosion
+rates, and analytical solutions for transient erosion of a single sample.
+
 ## erosion scenarios
 Currently 9 erosion scenarios are supported. There are two main scenario types:
 step-changes in erosion and erosion spikes. In step change models, the erosion rate
@@ -85,6 +88,8 @@ layer on top of the bedrock with a constant thickness through time. For soil mix
 * 'Isolines_10Be_14C': Calculates the analytical solution for step and spike
 scenarios. Remember: 1 samples --> 2 equations and three unknowns (e1,e2,t), 
 and hence all parameter combinations follow a line, which this script calculates.
+
+* 'Apparent_erosion_rates': Calculates the apparent erosion rates for 10be, 14C, and 26Al.
 
 ## Inversion sampler
 This toolbox supports two inversion samplers:
