@@ -8,7 +8,7 @@ function newfig=ecornerplot(m,varargin)
 %
 % 
 %   When m is a 3d matrix (ndims(m)==3), then it is assumed to have the form 
-%   MxWxT as output from GWMCMC, where M is the number of parameters, W is
+%   MxWxT where M is the number of parameters, W is
 %   the number of walkers, and T is the number of steps in each markov chain.
 %
 %
@@ -34,7 +34,9 @@ function newfig=ecornerplot(m,varargin)
 %   m(:,3)=exp(m(:,3)/2);
 %   ecornerplot(m,'support',[nan nan;nan nan; 0 nan]','ks',true);
 %
-% Aslak Grinsted 2015
+% Aslak Grinsted 2015, modified by Richard Ott 2026
+% Aslak Grinsted (2026). Markov Chain Monte Carlo sampling of posterior 
+% distribution (https://nl.mathworks.com/matlabcentral/fileexchange/47912-markov-chain-monte-carlo-sampling-of-posterior-distribution), MATLAB Central File Exchange. Retrieved March 27, 2026.
 
 if nargin==0
     close all
@@ -63,14 +65,6 @@ p=p.Results;
 
 if (size(m,1)<size(m,2))&&(ismatrix(m)), m=m'; end; %Consider this behaviour further....
 
-
-if isempty(p.ess)
-    [~,~,p.ess]=eacorr(m);
-    p.ess=mean(p.ess);
-end
-
-
-
 if ndims(m)==3
     m=m(:,:)'; 
 end
@@ -80,6 +74,9 @@ end
 
 M=size(m,2);
 Np=size(m,1);
+if isempty(p.ess)
+    p.ess = Np;
+end
 if p.ess>Np
     error('Effective Sample Size (ess) must be smaller than number of samples')
 end
@@ -116,7 +113,7 @@ newfig = figure('Units', 'normalized', 'Position', [0.05, 0.05, 0.8, 0.8]);
 H=nan(M);
 for r=1:M
     for c=1:max(r,M*p.fullmatrix)
-        H(r,c)=subaxis(M,M,c,r,'s',0.01,'mb',0.12,'mt',0.05,'ml',0.12,'mr',0.0);
+        H(r,c)=subplot(M,M,(r-1)*M+c);
         if c==r
             if p.ks
                 [F,X,bw]=ksdensity(m(:,r),'support',p.support(:,r)); %TODO: use ESS 
@@ -147,36 +144,21 @@ for r=1:M
             if p.scatter
                 plot(m(:,c),m(:,r),'.','color',p.color)
             else
-                %                 [N,C]=hist3(m(:,[c r]),[0 0]+ceil(sqrt(Np)/5));
-                %                 imagesc(C{1},C{2},N)
-                %                 caxis([0 max(N(:))]);
-                %                 axis xy
-                try
-                    [~,N,X,Y]=kde2d(m(:,[c r]),2^9,p.support(1,[c r]),p.support(2,[c r]),p.ess);
-                    %                 ns=sort(N(:));
-                    %                 cint=interp1q(cumsum(ns)/sum(ns),ns,[0.05 0.17 0.50 0.83 0.95]');
-                    hold on
-                    %N=N/max(N(:));
-                    %contourf(X,Y,N,(0.1:.2:1)','edgecolor',p.color); %TODO: try to make it HDI like???
-                    N=N/sum(N(:));
-                    NS=sort(N(:));
-                    levels = interp1q(cumsum(NS),NS,(0.1:.2:1)')'; %HDI LEVELS
-                    contourf(X,Y,N,levels,'edgecolor',p.color);
-                    caxis([0,max(NS)])
-
-                    % if~isempty(p.bestmodel)
-                    %     differences = abs(X - p.bestmodel(r));
-                    %     [~, index1] = min(differences);
-                    %     differences = abs(Y - p.bestmodel(c));
-                    %     [~, index2] = min(differences);
-                    %     hold on
-                    % 
-                    %     plot(X(index1),Y(index2),'Color', 'k' , 'Marker','diamond')
-                    % end
-                catch
+                if exist('kde2d', 'file') == 2
+                    try
+                        [~,N,X,Y]=kde2d(m(:,[c r]),2^9,p.support(1,[c r]),p.support(2,[c r]),p.ess);
+                        hold on
+                        N=N/sum(N(:));
+                        NS=sort(N(:));
+                        levels = interp1q(cumsum(NS),NS,(0.1:.2:1)')'; %HDI LEVELS
+                        contourf(X,Y,N,levels,'edgecolor',p.color);
+                        caxis([0,max(NS)])
+                    catch
+                        plot(m(:,c),m(:,r),'.','color',p.color)
+                    end
+                else
+                    plot(m(:,c),m(:,r),'.','color',p.color)
                 end
-                %                 pcolor(X,Y,N); %
-                %                 shading interp
             end
             set(gca,'XGrid',p.grid,'YGrid',p.grid)
             if diff(p.range(1:2,r))>0, set(gca,'Ylim',p.range(1:2,r)); end

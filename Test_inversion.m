@@ -5,7 +5,6 @@ addpath(genpath(pwd))
 
 %% USER INPUT ----------------------------------------------------------- %
 
-algorithm = 'hmc';   % Choose algorithm: 'hmc' or 'gwmcmc'
 profile = 'quick';   % Choose algorithm profile: 'quick', 'balanced', or 'robust' for manual adjustment check inversion_build_config.m
 export = false;
 filetag = 'test';    % Use 'test' to run test scenarios
@@ -14,14 +13,17 @@ filetag = 'test';    % Use 'test' to run test scenarios
 T = [1e2, 6e3];
 E = [0,   5e3];
 LOSS = [0, 200];
-CHG = [0.1, 50];
+CHG = [1, 50];
 
-cfg = inversion_build_config(filetag, algorithm, profile);
+cfg = inversion_build_config(filetag, profile);
 
 % Scenario selection. Select which scenarios to run:
 allScenarios = {'step', 'samestep', 'samebackground_step', 'samebackground_samestep', ...
-    'spike', 'samespike', 'samebackground_spike', 'samebackground_samespike'};
-runScenario = [true, true, true, true, true, true, true, true];
+    'spike', 'samespike', 'samebackground_spike', 'samebackground_samespike',...
+    'curve'};
+runScenario = [false, false, false, false,...
+    false, true, true, true,...
+    false];
 cfg.scenarios = allScenarios(runScenario);
 cfg.pause = true; % do you want to pause at the plotting stage, before computing the next scenario?
 
@@ -45,7 +47,7 @@ for i = 1:numel(cfg.scenarios)
     sp = sample_parameters(tdata.lat, tdata.lon, tdata.altitude, consts);
 
     %% Initial model
-    nWalks = cfg.(cfg.algorithm).nWalks;
+    nWalks = cfg.hmc.nWalks;
     mini = initialmodel_flatprior(prior_range, nWalks, tdata.steps);
 
     %% Forward model and synthetic observations
@@ -62,7 +64,7 @@ for i = 1:numel(cfg.scenarios)
     %% Sample posterior
     tic
     [models, logLikeStore, samplerInfo] = inversion_run_sampler( ...
-        cfg.algorithm, prior_range, var_names, mini, logLikeFn, cfg.(cfg.algorithm), scenario, tdata.steps);
+        prior_range, var_names, mini, logLikeFn, cfg.hmc, scenario, tdata.steps);
     runtimeSeconds = toc;
 
     %% Best-fit model and quick diagnostics
@@ -70,10 +72,8 @@ for i = 1:numel(cfg.scenarios)
     best_pred = forward_model(double(best_model));
 
     true_model_like = logLikeFn(mtest);
-    fprintf('\n%s | %s | %.2fs\n', upper(cfg.algorithm), scenario, runtimeSeconds);
-    if strcmp(cfg.algorithm, 'hmc')
-        fprintf('Mean HMC acceptance ratio: %.3f\n', mean(samplerInfo.accRatio));
-    end
+    fprintf('\nHMC | %s | %.2fs\n', scenario, runtimeSeconds);
+    fprintf('Mean HMC acceptance ratio: %.3f\n', mean(samplerInfo.accRatio));
     fprintf('Best model log-likelihood: %.3f\n', best_model_like);
     fprintf('True model log-likelihood: %.3f\n', true_model_like);
     fprintf('Log-likelihood gap (true-best): %.3f\n', true_model_like - best_model_like);
@@ -89,7 +89,7 @@ for i = 1:numel(cfg.scenarios)
 
     %% Export
     if export
-        base = ['./output/' cfg.filetag '_' scenario '_' cfg.algorithm];
+        base = ['./output/' cfg.filetag '_' scenario];
         exportgraphics(h1, [base '_autocorrelation.png'], 'Resolution', 300)
         exportgraphics(h2, [base '_chains.png'], 'Resolution', 300)
         exportgraphics(h3, [base '_cornerplot.png'], 'Resolution', 300)

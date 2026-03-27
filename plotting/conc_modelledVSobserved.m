@@ -1,6 +1,6 @@
 function H = conc_modelledVSobserved(best_pred,N10,dN10,N14,dN14)
 % plots the compairson of modelled vs observed N10 and N14 concentrations
-% as output from the gwmcmc ensemlbe sampler against the measured
+% as output from the sampler against the measured
 % concentrations
 
 hold on; box on; grid on;

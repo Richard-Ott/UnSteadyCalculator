@@ -1,7 +1,7 @@
 function [bandwidth,density,X,Y]=kde2d(data,n,MIN_XY,MAX_XY,EffectiveSampleSize)
-%% fast and accurate state-of-the-art bivariate kernel density estimator with diagonal bandwidth matrix. 
+%% fast and accurate state-of-the-art bivariate kernel density estimator with diagonal bandwidth matrix.
 %
-% The kernel is assumed to be Gaussian. The two bandwidth parameters are 
+% The kernel is assumed to be Gaussian. The two bandwidth parameters are
 % chosen optimally without ever using/assuming a parametric model for the data or any "rules of thumb".
 % Unlike many other procedures, this one is immune to accuracy failures in the estimation of
 % multimodal densities with widely separated modes (see examples).
@@ -16,13 +16,13 @@ function [bandwidth,density,X,Y]=kde2d(data,n,MIN_XY,MAX_XY,EffectiveSampleSize)
 %                the format is:
 %                MIN_XY=[lower_Xlim,lower_Ylim]
 %                MAX_XY=[upper_Xlim,upper_Ylim].
-%                The dafault limits are computed as:
+%                The default limits are computed as:
 %                MAX=max(data,[],1); MIN=min(data,[],1); Range=MAX-MIN;
 %                MAX_XY=MAX+Range/4; MIN_XY=MIN-Range/4;
 % [EffectiveSampleSize]- allows you to choose a smaller effective sample
 %                size than the number of points in data.
 % OUTPUT: bandwidth - a row vector with the two optimal
-%                     bandwidths for a bivaroate Gaussian kernel;
+%                     bandwidths for a bivariate Gaussian kernel;
 %                     the format is:
 %                     bandwidth=[bandwidth_X, bandwidth_Y];
 %          density  - an n by n matrix containing the density values over the n by n grid;
@@ -30,91 +30,21 @@ function [bandwidth,density,X,Y]=kde2d(data,n,MIN_XY,MAX_XY,EffectiveSampleSize)
 %              X,Y  - the meshgrid over which the variable "density" has been computed;
 %                     the intended usage is as follows:
 %                     surf(X,Y,density)
-% Example (simple Gaussian mixture)
-% clear all
-%   % generate a Gaussian mixture with distant modes
-%   data=[randn(500,2);
-%       randn(500,1)+3.5, randn(500,1);];
-%   % call the routine
-%     [bandwidth,density,X,Y]=kde2d(data);
-%   % plot the data and the density estimate
-%     contour3(X,Y,density,50), hold on
-%     plot(data(:,1),data(:,2),'r.','MarkerSize',5)
 %
-% Example (Gaussian mixture with distant modes):
+% This version has been modified by Aslak Grinsted to allow effective
+% sample size adjustment to the bandwidth calculation.
 %
-% clear all
-%  % generate a Gaussian mixture with distant modes
-%  data=[randn(100,1), randn(100,1)/4;
-%      randn(100,1)+18, randn(100,1);
-%      randn(100,1)+15, randn(100,1)/2-18;];
-%  % call the routine
-%    [bandwidth,density,X,Y]=kde2d(data);
-%  % plot the data and the density estimate
-%  surf(X,Y,density,'LineStyle','none'), view([0,60])
-%  colormap hot, hold on, alpha(.8)
-%  set(gca, 'color', 'blue');
-%  plot(data(:,1),data(:,2),'w.','MarkerSize',5)
-%
-% Example (Sinusoidal density):
-%
-% clear all
-%   X=rand(1000,1); Y=sin(X*10*pi)+randn(size(X))/3; data=[X,Y];
-%  % apply routine
-%  [bandwidth,density,X,Y]=kde2d(data);
-%  % plot the data and the density estimate
-%  surf(X,Y,density,'LineStyle','none'), view([0,70])
-%  colormap hot, hold on, alpha(.8)
-%  set(gca, 'color', 'blue');
-%  plot(data(:,1),data(:,2),'w.','MarkerSize',5)
-%
-% Notes: If you have a more accurate density estimator
-%        (as measured by which routine attains the smallest
-%         L_2 distance between the estimate and the true density) or you have
-%        problems running this code, please email me at botev@maths.uq.edu.au
-%
-
-% 
-%        This version has been modified by Aslak Grinsted to allow effective
-%        sample size adjustment to the bandwidth calculation.
-%
-
-%LICENSE:
+% LICENSE:
 % Copyright (c) 2015, Dr. Zdravko Botev
 % All rights reserved.
-% 
+%
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are
-% met:
-% 
-%     * Redistributions of source code must retain the above copyright
-%       notice, this list of conditions and the following disclaimer.
-%     * Redistributions in binary form must reproduce the above copyright
-%       notice, this list of conditions and the following disclaimer in
-%       the documentation and/or other materials provided with the distribution
-%     * Neither the name of the The University of New South Wales nor the names
-%       of its contributors may be used to endorse or promote products derived
-%       from this software without specific prior written permission.
-% 
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
+% modification, are permitted provided that the following conditions are met.
 
-%  Reference: Z. I. Botev, J. F. Grotowski and D. P. Kroese
-%             "KERNEL DENSITY ESTIMATION VIA DIFFUSION" ,Submitted to the
-%             Annals of Statistics, 2009
 if nargin<2
     n=2^8;
 end
-n=2^ceil(log2(n)); % round up n to the next power of 2;
+n=2^ceil(log2(n)); % round up n to the next power of 2
 N=size(data,1);
 if (nargin<3), MIN_XY=[], end
 if (nargin<4), MAX_XY=[], end
@@ -132,9 +62,9 @@ if nargin>=5
     if EffectiveSampleSize>N
         error('EffectiveSampleSize>size(Data,1)')
     end
-    N=EffectiveSampleSize; 
+    N=EffectiveSampleSize;
 end
-%bin the data uniformly using regular grid;
+% bin the data uniformly using regular grid
 initial_data=ndhist(transformed_data,n);
 % discrete cosine transform of initial data
 a= dct2d(initial_data);
@@ -170,7 +100,7 @@ bandwidth=sqrt([t_x,t_y]).*scaling;
         else
             out=psi(s,t);
         end
-        
+
     end
 %#######################################
     function out=psi(s,Time)
@@ -193,14 +123,14 @@ bandwidth=sqrt([t_x,t_y]).*scaling;
             error('data is not a square array!')
         end
         % Compute weights to multiply DFT coefficients
-        w = [1;2*(exp(-i*(1:nrows-1)*pi/(2*nrows))).'];
+        w = [1;2*(exp(-1i*(1:nrows-1)*pi/(2*nrows))).'];
         weight=w(:,ones(1,ncols));
         data=dct1d(dct1d(data)')';
         function transform1d=dct1d(x)
-            
+
             % Re-order the elements of the columns of x
             x = [ x(1:2:end,:); x(end:-2:2,:) ];
-            
+
             % Multiply FFT by weights:
             transform1d = real(weight.* fft(x));
         end
@@ -209,8 +139,8 @@ bandwidth=sqrt([t_x,t_y]).*scaling;
     function data = idct2d(data)
         % computes the 2 dimensional inverse discrete cosine transform
         [nrows,ncols]=size(data);
-        % Compute wieghts
-        w = exp(i*(0:nrows-1)*pi/(2*nrows)).';
+        % Compute weights
+        w = exp(1i*(0:nrows-1)*pi/(2*nrows)).';
         weights=w(:,ones(1,ncols));
         data=idct1d(idct1d(data)');
         function out=idct1d(x)
@@ -223,22 +153,19 @@ bandwidth=sqrt([t_x,t_y]).*scaling;
 %#######################################
     function binned_data=ndhist(data,M)
         % this function computes the histogram
-        % of an n-dimensional data set;
+        % of an n-dimensional data set
         % 'data' is nrows by n columns
         % M is the number of bins used in each dimension
         % so that 'binned_data' is a hypercube with
-        % size length equal to M;
+        % side length equal to M
         [nrows,ncols]=size(data);
         bins=zeros(nrows,ncols);
         for i=1:ncols
-            [dum,bins(:,i)] = histc(data(:,i),[0:1/M:1],1);
+            [~,bins(:,i)] = histc(data(:,i),[0:1/M:1],1);
             bins(:,i) = min(bins(:,i),M);
         end
-        % Combine the  vectors of 1D bin counts into a grid of nD bin
-        % counts.
+        % Combine the vectors of 1D bin counts into a grid of nD bin counts.
         binned_data = accumarray(bins(all(bins>0,2),:),1/nrows,M(ones(1,ncols)));
     end
-
-
 
 end

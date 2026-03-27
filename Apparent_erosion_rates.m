@@ -91,9 +91,8 @@ disp(out_table)
 labelOffset = 10; % label offset in plot units
 
 C1 = [0, 92/255, 171/255];
-short_names = cellfun(@(s) regexp(s, '(?<=-)[^-]+$', 'match', 'once'), samp_names, 'UniformOutput', false);
-emptyNames = cellfun(@isempty, short_names);
-short_names(emptyNames) = samp_names(emptyNames);
+short_names = cellfun(@(s) regexprep(regexp(s, '(?<=-)[^-]+$', 'match', 'once'), '''$', ''), ...
+    samp_names, 'UniformOutput', false);
 
 has14 = any(isfinite(Erate10) & isfinite(Erate14));
 has26 = any(isfinite(Erate10) & isfinite(Erate26));
@@ -121,6 +120,27 @@ if has14 || has26
         ylabel('$\epsilon_{app}\,^{14}\mathrm{C}$ mm/ka', 'Interpreter', 'latex')
         title('^{14}C vs ^{10}Be', 'Interpreter', 'tex')
         panelIdx = panelIdx + 1;
+
+
+        % 1-1 1-5 and 1-10 text label
+        % get axis limits
+        xl = xlim;
+        yl = ylim;
+        
+        % compute angle correction so text aligns with lines on screen
+        pbaspect([1 1 1]) % because you use axis square
+        angle1 = atan2d(1*(xl(2)-xl(1)),(yl(2)-yl(1)));
+        angle5 = atan2d(5*(xl(2)-xl(1)),(yl(2)-yl(1)));
+        angle10 = atan2d(10*(xl(2)-xl(1)),(yl(2)-yl(1)));
+        
+        % label positions (chosen inside the visible axes)
+        x1 = 300;  y1 = 300;
+        x5 = 270;   y5 = 5*x5;
+        x10 =130;  y10 = 10*x10;
+        
+        text(x1,y1,'1:1','Rotation',angle1,'HorizontalAlignment','left','FontWeight','bold')
+        text(x5,y5,'5:1','Rotation',angle5,'HorizontalAlignment','left','FontWeight','bold')
+        text(x10,y10,'10:1','Rotation',angle10,'HorizontalAlignment','left','FontWeight','bold')
     end
 
     if has26

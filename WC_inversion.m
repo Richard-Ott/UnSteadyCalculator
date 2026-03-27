@@ -5,7 +5,6 @@ addpath(genpath(pwd))
 
 %% USER INPUT ----------------------------------------------------------- %
 
-algorithm = 'gwmcmc';   % Choose algorithm: 'hmc' or 'gwmcmc'
 profile = 'quick';   % Choose algorithm profile: 'quick', 'balanced', or 'robust' for manual adjustment check inversion_build_config.m
 export = false;
 filetag = 'WC';    % Use 'test' to run test scenarios
@@ -21,7 +20,7 @@ E_spike = [10, 3e2];
 LOSS = [0, 250];
 CHG = [0.1, 100];
 
-cfg = inversion_build_config(filetag, algorithm, profile);
+cfg = inversion_build_config(filetag, profile);
 
 % Scenario selection in main script using true/false flags.
 allScenarios = {'step', 'samestep', 'samebackground_step', 'samebackground_samestep', ...
@@ -69,7 +68,7 @@ for i = 1:numel(cfg.scenarios)
     forward_model = @(m) Nforward_wrapper(m, sp, consts, scenario, cfg.nsteps, Nlogical);
 
     %% Initial model
-    nWalks = cfg.(cfg.algorithm).nWalks;
+    nWalks = cfg.hmc.nWalks;
     mini = initialmodel_flatprior(prior_range, nWalks);
 
     %% Likelihood
@@ -79,17 +78,15 @@ for i = 1:numel(cfg.scenarios)
     %% Sample posterior
     tic
     [models, logLikeStore, samplerInfo] = inversion_run_sampler( ...
-        cfg.algorithm, prior_range, var_names, mini, logLikeFn, cfg.(cfg.algorithm), scenario, cfg.nsteps);
+        prior_range, var_names, mini, logLikeFn, cfg.hmc, scenario, cfg.nsteps);
     runtimeSeconds = toc;
 
     %% Best-fit model and status
     [best_model, best_model_like] = inversion_select_best_model(models, logLikeStore);
     best_pred = forward_model(double(best_model));
 
-    fprintf('\n%s | %s | %.2fs\n', upper(cfg.algorithm), scenario, runtimeSeconds);
-    if strcmp(cfg.algorithm, 'hmc')
-        fprintf('Mean HMC acceptance ratio: %.3f\n', mean(samplerInfo.accRatio));
-    end
+    fprintf('\nHMC | %s | %.2fs\n', scenario, runtimeSeconds);
+    fprintf('Mean HMC acceptance ratio: %.3f\n', mean(samplerInfo.accRatio));
     fprintf('Best model log-likelihood: %.3f\n', best_model_like);
 
     %% Plots
@@ -107,7 +104,7 @@ for i = 1:numel(cfg.scenarios)
             mkdir(outDir);
         end
 
-        base = [outDir '/WC_' cfg.filetag '_' scenario '_' cfg.algorithm];
+        base = [outDir '/WC_' cfg.filetag '_' scenario];
 
         exportgraphics(h1, [base '_autocorrelation.png'], 'Resolution', 300)
         exportgraphics(h2, [base '_chains.png'], 'Resolution', 300)

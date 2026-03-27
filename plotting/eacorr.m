@@ -34,6 +34,9 @@ function [C,lags,ESS]=eacorr(m)
 %    eacorr(filter2(ones(100,1),randn(1000,10)))
 %
 % Aslak Grinsted 2015
+% Aslak Grinsted (2026). Markov Chain Monte Carlo sampling of posterior 
+% distribution (https://nl.mathworks.com/matlabcentral/fileexchange/47912-markov-chain-monte-carlo-sampling-of-posterior-distribution), MATLAB Central File Exchange. Retrieved March 27, 2026.
+
 
 
 sM=size(m);
