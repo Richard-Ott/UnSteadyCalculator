@@ -8,7 +8,7 @@ function newfig=ecornerplot(m,varargin)
 %
 % 
 %   When m is a 3d matrix (ndims(m)==3), then it is assumed to have the form 
-%   MxWxT as output from GWMCMC, where M is the number of parameters, W is
+%   MxWxT, where M is the number of parameters, W is
 %   the number of walkers, and T is the number of steps in each markov chain.
 %
 %
@@ -116,7 +116,7 @@ newfig = figure('Units', 'normalized', 'Position', [0.05, 0.05, 0.8, 0.8]);
 H=nan(M);
 for r=1:M
     for c=1:max(r,M*p.fullmatrix)
-        H(r,c)=subaxis(M,M,c,r,'s',0.01,'mb',0.12,'mt',0.05,'ml',0.12,'mr',0.0);
+        H(r,c)=subplot(M,M,(r-1)*M+c);
         if c==r
             if p.ks
                 [F,X,bw]=ksdensity(m(:,r),'support',p.support(:,r)); %TODO: use ESS 

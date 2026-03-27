@@ -63,7 +63,7 @@ switch scenario
         E = model(nsteps+1);
         changevar = model(nsteps+2:end);
     case 'curve'
-        if length(model) > 2*nSamp    % if statement needed because for curve scenario initital model comes with time values and gwmcmc models don't (better to have hidden if-statement than having it in main script)
+        if length(model) > 2*nSamp    % initial models can include time values while sampled models do not
             E = model(nsteps+1:nsteps+nSamp);
             changevar = model(nsteps+nSamp+1:end);
         else

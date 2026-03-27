@@ -8,7 +8,7 @@ function [C,lags,ESS]=eacorr(m)
 % USAGE: [C,lags,ESS]=eacorr(m)
 %
 % INPUTS: 
-%    m: eacorr is designed to be applied on the MxWxT matrices output from gwmcmc,
+%    m: eacorr is designed to be applied on MxWxT matrices from ensemble samplers,
 %       but can also be applied to 2d and 1d matrices. 
 % 
 % OUTPUTs

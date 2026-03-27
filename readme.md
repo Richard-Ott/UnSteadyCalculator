@@ -54,14 +54,6 @@ taken from ‘the online calculator formerly known as Cronus-Earth online calcul
 approximated with two exponential functions, which were used for forward modelling 
 cosmogenic nuclide inventories. 
 
-Balco, G, Stone, JO, Lifton, NA, Dunai, TJ. 2008. A complete and easily accessible means 
-of calculating surface exposure ages or erosion rates from 10Be and 26Al measurements. 
-Quaternary Geochronology 3(3):174–195. https://doi.org/10.1016/j.quageo.2007.12.001 
-
-Balco, G, 2017, Production rate calculations for cosmic-ray-muon-produced 10Be and 26Al 
-benchmarked against geological calibration data, Quaternary Geochronology, 39: 150-173,
-https://doi.org/10.1016/j.quageo.2017.02.001.
-
 ## Forward model
 The forward model simulates cosmogenic nuclide concentrations as a set of exponentials
 that are being modified to depth cut-offs depending on the total amount of erosion occuring
@@ -74,8 +66,8 @@ layer on top of the bedrock with a constant thickness through time. For soil mix
 
 ## Example scripts
 * 'Test_inversion': Unified test runner for synthetic scenarios. In the user input
-	section of this script, select (1) inversion algorithm ('hmc' or 'gwmcmc'),
-	(2) algorithm profile ('quick', 'balanced', 'robust'), (3) priors, and
+	section of this script, select (1) algorithm profile ('quick', 'balanced', 'robust'),
+	(2) priors, and
 	(4) scenario flags (true/false for each scenario).
 
 * 'WC_inversion': Unified runner for the Western Crete dataset. The same
@@ -87,37 +79,23 @@ scenarios. Remember: 1 samples --> 2 equations and three unknowns (e1,e2,t),
 and hence all parameter combinations follow a line, which this script calculates.
 
 ## Inversion sampler
-This toolbox supports two inversion samplers:
-
-* 'gwmcmc' Bayesian Ensemble Sampler (Goodman and Weare, 2010). This algorithm
-	converges faster on a solution than traditional MCMC samplers in high-dimensional
-	parameter spaces, as it is unaffected by affine transformations of space
-	(linear transformations etc.).
-	Use this sampler when you want a robust default with minimal tuning and good
-	global exploration from multiple walkers. Good for simple problems (few parameters).
+This toolbox currently supports MATLAB Hamiltonian Monte Carlo (HMC):
 
 * MATLAB Hamiltonian Monte Carlo ('hmcSampler' / 'drawSamples'). This implementation
 	uses unconstrained parameter transforms internally and supports profile-based tuning
 	settings via 'inversion_build_config'.
-	Use this sampler for a higher sampling efficiency per accepted draw after tuning. This
-    is especially useful for complex problems with many parameters (e.g., 'step' scenario 
-    with 10 samples or more). 
 
-Short comparison:
+In both unified run scripts ('Test_inversion' and 'WC_inversion'), select a tuning preset
+with the 'profile' variable.
 
-* GWMCMC: Usually easier to set up, often more forgiving for multimodal or rough
-	posteriors, but can need many model evaluations.
+References:
+Balco, G, Stone, JO, Lifton, NA, Dunai, TJ. 2008. A complete and easily accessible means 
+of calculating surface exposure ages or erosion rates from 10Be and 26Al measurements. 
+Quaternary Geochronology 3(3):174–195. https://doi.org/10.1016/j.quageo.2007.12.001 
 
-* HMC: Can mix faster within one mode and provide efficient local exploration,
-	but is more sensitive to parameterization and tuning (step size, leapfrog steps,
-	burn-in).
-
-In both unified run scripts ('Test_inversion' and 'WC_inversion'), select the sampler
-with the 'algorithm' variable and select a tuning preset with 'profile'.
-
-Goodman, J., & Weare, J. (2010). Ensemble samplers with affine invariance. 
-Communications in Applied Mathematics and Computational Science, 5(1), 65-80.
- https://doi.org/10.2140/camcos.2010.5.65
+Balco, G, 2017, Production rate calculations for cosmic-ray-muon-produced 10Be and 26Al 
+benchmarked against geological calibration data, Quaternary Geochronology, 39: 150-173,
+https://doi.org/10.1016/j.quageo.2017.02.001.
 
 All Rights Reserved
 
