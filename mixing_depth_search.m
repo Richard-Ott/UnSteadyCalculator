@@ -88,7 +88,6 @@ for i = 1:n
 
     xlabel('z_m (cm)')
     ylabel('\epsilon (mm/ka)')
-    set(gca, 'YScale', 'log')
     xlim([min(zm), max(zm)])
     grid on
     box on
@@ -103,11 +102,10 @@ hold on
 solved = hasSolution & isfinite(Ebest) & isfinite(zmbest);
 
 if any(solved)
-    scatter(zmbest(solved), Ebest(solved), 45, 'filled', 'MarkerFaceColor', [0.15 0.5 0.15])
+    scatter(zmbest(solved), Ebest(solved), 45, 'filled', 'MarkerFaceColor', 'k')
     text(zmbest(solved) + 2, Ebest(solved), short_names(solved), 'FontSize', 8)
 end
 
-set(gca, 'YScale', 'log')
 grid on
 box on
 xlabel('z_m (cm)')
