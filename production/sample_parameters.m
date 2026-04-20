@@ -1,13 +1,11 @@
 function [sp] = sample_parameters(lat,lon,altitude,consts)
-% get top spallation production from Cronus v3 for 10Be, 14C, 26Al
+% get P_surface and attentuatin length for 10Be, 14C, 26Al spallation and
+% muons and get scaling factors from Stone 2000 model.
 % multi sample input possible (provide variables as vectors)
 % calculates muon surface production rates and effective attenuation
 % lengths using Blaco 2017 model 1A code.
 %
 % Richard Ott, 2024
-
-% addpath('C:\Users\rott\OneDrive - UvA\Richard\PhD_ETH\matlab\CRONUS cosmo calculation\cronus 3.0\online-calculators-v3')
-% addpath('C:\Users\rott\OneDrive - UvA\Richard\PhD_ETH\matlab\CRONUS cosmo calculation\cronus 3.0\online-calculators-v3\data')
 
 sp.pressure = ERA40atm(lat, lon, altitude);  % atmospheric pressure
 

@@ -1,4 +1,4 @@
-# UnSteadyErosion calculator
+# Unsteady Calculator
 
 This toolbox has two main purposes: (1) provide forward models to calculate
 nuclide concentrations for unsteady erosion scenarios, and (2) provide inversion
@@ -58,20 +58,21 @@ approximated with two exponential functions, which were used for forward modelli
 cosmogenic nuclide inventories. 
 
 ## Forward model
-The forward model simulates cosmogenic nuclide concentrations as a set of exponentials
-that are being modified to depth cut-offs depending on the total amount of erosion occuring
-during an erosion event or time period. 
+The forward model Nforward_discretized simulates cosmogenic nuclide concentrations as 
+a set of exponentials that are being modified to depth cut-offs depending on the total 
+amount of erosion occuring during an erosion event or time period. 
+A separte forward model calculates nuclide concentrations for steady state erosion (Nforward_steadystate.m).  
  
 ## Soil mixing
 The code can be run with and without mixing in the soil. Sol mixing is modelled as a well-mixed
-layer on top of the bedrock with a constant thickness through time. For soil mixing, swith to the
+layer on top of the bedrock with a constant thickness through time. For soil mixing, switch to the
 'soil_mixing' branch of this repository.
 
 ## Example scripts
 * 'Test_inversion': Unified test runner for synthetic scenarios. In the user input
-	section of this script, select (1) inversion algorithm ('hmc'),
-	(2) algorithm profile ('quick', 'balanced', 'robust'), (3) priors, and
-	(4) scenario flags (true/false for each scenario).
+	section of this script, select 
+	(1) algorithm profile ('quick', 'balanced', 'robust'), (2) priors, and
+	(3) scenario flags (true/false for each scenario).
 
 * 'WC_inversion': Unified runner for the Western Crete dataset. The same
 	algorithm and profile selection applies here, while priors and scenario flags are
@@ -81,26 +82,31 @@ layer on top of the bedrock with a constant thickness through time. For soil mix
 scenarios. Remember: 1 samples --> 2 equations and three unknowns (e1,e2,t), 
 and hence all parameter combinations follow a line, which this script calculates.
 
-* 'Apparent_erosion_rates': Calculates the apparent erosion rates for 10be, 14C, and 26Al.
+* 'Apparent_erosion_rates': Calculates the apparent erosion rates for 10Be, 14C, and 26Al.
 
 ## Inversion sampler
-This toolbox currently supports MATLAB Hamiltonian Monte Carlo (HMC):
+This toolbox currently uses the MATLAB Hamiltonian Monte Carlo (HMC):
 
 * MATLAB Hamiltonian Monte Carlo ('hmcSampler' / 'drawSamples'). This implementation
 	uses unconstrained parameter transforms internally and supports profile-based tuning
 	settings via 'inversion_build_config'.
 
-All Rights Reserved
+## License
+Copyright (C) 2026 Dr. Richard Ott
 
-Copyright (c) UnSteadyErosion 2026 Richard Ott
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see
+<https://www.gnu.org/licenses/>.
 
 References:
 

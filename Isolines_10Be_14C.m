@@ -1,11 +1,11 @@
-% This code computes the isolines of erosion ratios for a step or spike
+% This script computes the isolines of erosion ratios for a step or spike
 % change in erosion rate, given 10Be-14C nuclice concentration measurements.
 % The code might take some time to run, mainly because the Matlab
 % optimization function can get stuck in some local minima. Thus, I run
 % several optimizations and only plot the results from the best one.
 % Especially for the spike scenario, at high spikes you might have removed
 % all of the nuclides, and thus, there's nothing to know about the nuclide
-% concentrations beyond that point. 
+% concentrations beyond that point (no line plotted far back in time).
 % Richard Ott, 2024
 
 clc
@@ -15,7 +15,7 @@ addpath(genpath(pwd))
 
 %% USER INPUT ----------------------------------------------------------- %
 
-scenario = 'step'; % 'step' or 'spike'
+scenario = 'spike'; % 'step' or 'spike'
 
 dataFile = 'data\WCdata_RFO.xlsx';
 demFile = '.\data\crete_clipped_utm.tif';

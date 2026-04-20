@@ -1,3 +1,5 @@
+% This script shows the application of the inversion scheme for the western
+% Crete samples.
 clear
 clc
 close all
@@ -13,7 +15,7 @@ filetag = 'WC';    % Use 'test' to run test scenarios
 DEM  = GRIDobj('.\data\crete_clipped_utm.tif');
 file = 'data\WCdata_RFO.xlsx'; % AMS data
 
-% Priors 
+% Prior ranges
 T = [1, 6e3];
 E_step  = [10, 5e3];
 E_spike = [10, 3e2];
@@ -34,6 +36,7 @@ cfg.pause = true; % do you want to pause at the plotting stage, before computing
 SAMS = cosmosampleread(file);
 SAMS = cosmowatersheds(SAMS,DEM);
 
+% take median lat,lon,elevation values for production calculations
 lat = arrayfun(@(x) median(x.WSLat), SAMS);
 lon = arrayfun(@(x) median(x.WSLon), SAMS);
 alt = arrayfun(@(x) median(x.WSDEM.Z(:), 'omitnan'), SAMS);
@@ -58,7 +61,7 @@ for i = 1:numel(cfg.scenarios)
     [prior_range, var_names] = make_prior_and_varnames( ...
         scenario, T, E, LOSS, CHG, length(data.N10), cfg.nsteps);
 
-    if strcmp(scenario, 'step')
+    if strcmp(scenario, 'step') % Crete specific fix that can be removed
         prior_range(2:11,2) = 300;   % limit erosion in step model erosion rate 1
     end
 
@@ -76,16 +79,14 @@ for i = 1:numel(cfg.scenarios)
     logLikeFn = @(m) sum(lognormpdf(Nobs(Nlogical), forward_model(m), dNobs(Nlogical)));
 
     %% Sample posterior
-    tic
+    
     [models, logLikeStore, samplerInfo] = inversion_run_sampler( ...
         prior_range, var_names, mini, logLikeFn, cfg.hmc, scenario, cfg.nsteps);
-    runtimeSeconds = toc;
 
     %% Best-fit model and status
     [best_model, best_model_like] = inversion_select_best_model(models, logLikeStore);
     best_pred = forward_model(double(best_model));
 
-    fprintf('\nHMC | %s | %.2fs\n', scenario, runtimeSeconds);
     fprintf('Mean HMC acceptance ratio: %.3f\n', mean(samplerInfo.accRatio));
     fprintf('Best model log-likelihood: %.3f\n', best_model_like);
 

@@ -6,8 +6,7 @@ function N = Nforward_wrapper(model,sp,consts,scenario,nsteps,Nlogical)
 % Input:
 %       - model: inversion model as column vector
 %       - sp: sample specific parameters (Pspal & pressure)
-%       - consts: the consts_v3.mat file from Cronus v3
-%       - precalculated muon production rates from Cronus v3 (Nmu.mat)
+%       - consts: the constaants from the make_constants function
 %       - scenario: type of erosion scenario. 
 %       - nsteps:  the number of step changes or spike erosion losses, = 0
 %       for curve model
@@ -15,7 +14,7 @@ function N = Nforward_wrapper(model,sp,consts,scenario,nsteps,Nlogical)
 %       measured for which sample (column order: 10Be, 14C, 26Al)
 %
 % Output:
-%       - N = [N10,N14]: concentrations at/g of 10Be and 14C
+%       - N = [N10,N14,26]: concentrations at/g of 10Be, 14C, and 26Al
 %
 % Richard Ott 2024
 

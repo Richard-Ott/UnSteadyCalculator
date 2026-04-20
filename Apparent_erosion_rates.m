@@ -49,7 +49,7 @@ dErate26 = nan(n,1);
 for i = 1:n
     if Nlogical(i,1)
         logE = fminbnd(@(x) steady_state_misfit(x, Nobs(i,1), i, 1, sp, consts), log10(emin), log10(emax));
-        Erate10(i) = 10.^logE;
+        Erate10(i) = 10.^logE;  % use log for search efficiency
 
         logEhigh = fminbnd(@(x) steady_state_misfit(x, Nobs(i,1) - dNobs(i,1), i, 1, sp, consts), log10(emin), log10(emax));
         logElow = fminbnd(@(x) steady_state_misfit(x, Nobs(i,1) + dNobs(i,1), i, 1, sp, consts), log10(emin), log10(emax));
@@ -61,7 +61,7 @@ end
 for i = 1:n
     if Nlogical(i,2)
         logE = fminbnd(@(x) steady_state_misfit(x, Nobs(i,2), i, 2, sp, consts), log10(emin), log10(emax));
-        Erate14(i) = 10.^logE;
+        Erate14(i) = 10.^logE;  % use log for search efficiency
 
         logEhigh = fminbnd(@(x) steady_state_misfit(x, Nobs(i,2) - dNobs(i,2), i, 2, sp, consts), log10(emin), log10(emax));
         logElow = fminbnd(@(x) steady_state_misfit(x, Nobs(i,2) + dNobs(i,2), i, 2, sp, consts), log10(emin), log10(emax));
@@ -73,7 +73,7 @@ end
 for i = 1:n
     if Nlogical(i,3)
         logE = fminbnd(@(x) steady_state_misfit(x, Nobs(i,3), i, 3, sp, consts), log10(emin), log10(emax));
-        Erate26(i) = 10.^logE;
+        Erate26(i) = 10.^logE;  % use log for search efficiency
 
         logEhigh = fminbnd(@(x) steady_state_misfit(x, Nobs(i,3) - dNobs(i,3), i, 3, sp, consts), log10(emin), log10(emax));
         logElow = fminbnd(@(x) steady_state_misfit(x, Nobs(i,3) + dNobs(i,3), i, 3, sp, consts), log10(emin), log10(emax));
