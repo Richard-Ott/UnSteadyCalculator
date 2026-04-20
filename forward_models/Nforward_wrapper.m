@@ -15,7 +15,7 @@ function N = Nforward_wrapper(model,sp,consts,zm,scenario,nsteps,Nlogical)
 %       measured for which sample (column order: 10Be, 14C, 26Al)
 %
 % Output:
-%       - N = [N10,N14]: concentrations at/g of 10Be and 14C
+%       - N = [N10,N14,N26]: concentrations at/g of 10Be, 14C, and 26Al
 %
 % Richard Ott 2024
 

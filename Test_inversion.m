@@ -1,3 +1,5 @@
+% Run synthetic samples to see whether inversion can recover model
+% parameters reliably.
 clear
 clc
 close all
@@ -60,17 +62,14 @@ for i = 1:numel(cfg.scenarios)
     logLikeFn = @(m) sum(lognormpdf(testObs, forward_model(m), sigmaObs));
 
     %% Sample posterior
-    tic
     [models, logLikeStore, samplerInfo] = inversion_run_sampler( ...
         prior_range, var_names, mini, logLikeFn, cfg.hmc, scenario, tdata.steps);
-    runtimeSeconds = toc;
 
     %% Best-fit model and quick diagnostics
     [best_model, best_model_like] = inversion_select_best_model(models, logLikeStore);
     best_pred = forward_model(double(best_model));
 
     true_model_like = logLikeFn(mtest);
-    fprintf('\nHMC | %s | %.2fs\n', scenario, runtimeSeconds);
     fprintf('Mean HMC acceptance ratio: %.3f\n', mean(samplerInfo.accRatio));
     fprintf('Best model log-likelihood: %.3f\n', best_model_like);
     fprintf('True model log-likelihood: %.3f\n', true_model_like);

@@ -1,5 +1,6 @@
 function [sp] = sample_parameters(lat,lon,altitude,consts)
-% get top spallation production from Cronus v3 for 10Be, 14C, 26Al
+% get surface production rate for 10Be, 14C, 26Al and attenuation lengths
+% also get scaling factors for Stone 2000
 % multi sample input possible (provide variables as vectors)
 % calculates muon surface production rates and effective attenuation
 % lengths using Blaco 2017 model 1A code.

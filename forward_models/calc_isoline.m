@@ -1,8 +1,5 @@
 function [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario,zm)
-%CALC_ISOLINE Compute 10Be-14C isolines for step or spike erosion scenarios.
-%
-%   [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario,zm)
-%
+% Compute 10Be-14C isolines for step or spike erosion scenarios.
 %   INPUTS
 %   SAMS      Sample struct array (from cosmosampleread) with observed
 %             concentrations and uncertainties (N10/N14, N10sigma/N14sigma).
@@ -20,8 +17,6 @@ function [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario,zm)
 %   p1low,p2low Best-fit parameters for (obs + sigma), used as one envelope.
 %
 %   NOTES
-%   - The function uses the same forward-model setup as Test_inversion and
-%     WC_inversion.
 %   - Isoline inversion is non-convex. To avoid jumps to poor local minima
 %     (for example E2/E1 spuriously collapsing toward zero), each time point
 %     is solved with multiple starts and the lowest-misfit solution is kept.
@@ -30,8 +25,10 @@ function [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario,zm)
 %   - In 'spike' mode, curves are truncated at old ages once fitted loss
 %     approaches the configured upper-loss ceiling. At that point most
 %     inherited nuclides are effectively removed, so pre-spike history is
-%     weakly constrained and solutions can become unstable/non-unique.
+%     becomes unstable/non-unique.
 
+% Relative mismatch threshold for spike isolines. 
+misfitCutFrac = 0.02;  % percentage mismatch above which we assume solutions is useless
 
 if nargin < 5 || isempty(zm)
     zm = 0;
@@ -73,7 +70,6 @@ end
 LB = [0, 0];
 
 options = optimset('Display','off','MaxIter',2e4,'MaxFunEvals',2e4,'TolX',1e-6,'TolFun',1e-3);
-spikeLossCutFrac = 0.90;
 
 for i = 1:n
     % Solve each catchment/sample independently.
@@ -85,19 +81,46 @@ for i = 1:n
     obs = [N10(i); N14(i)];
     sig = [dN10(i); dN14(i)];
 
-    sp = slice_sample_parameters(spAll, i);
+    % Extract just the current sample-specific parameters from the full set.
+    sp = struct();
+    fields = fieldnames(spAll);
+    for k = 1:numel(fields)
+        v = spAll.(fields{k});
+        if isnumeric(v) && isvector(v) && numel(v) == numel(spAll.P10spal)
+            sp.(fields{k}) = v(i);
+        else
+            sp.(fields{k}) = v;
+        end
+    end
+
     % Warm starts: keep continuity in t by seeding with previous solution.
     xPrev = x0;
     xPrevLow = x0;
     xPrevUp = x0;
+    misfitBest = nan(1,length(t));
+    misfitLow = nan(1,length(t));
+    misfitUp = nan(1,length(t));
 
     for j = 1:length(t)
         tStep = [t(j), 0];
 
+        % Combine default, warm, and a few exploratory seeds; keep best fit.
+        switch scenario
+            case 'step'
+                starts = [x0; xPrev; 50, 5e3; 80, 3e4; 200, 10; 800, 1];
+                startsLow = [x0; xPrevLow; 50, 5e3; 80, 3e4; 200, 10; 800, 1];
+                startsUp = [x0; xPrevUp; 50, 5e3; 80, 3e4; 200, 10; 800, 1];
+            case 'spike'
+                starts = [x0; xPrev; 50, 500; 200, 100; 800, 20];
+                startsLow = [x0; xPrevLow; 50, 500; 200, 100; 800, 20];
+                startsUp = [x0; xPrevUp; 50, 500; 200, 100; 800, 20];
+        end
+        starts = unique(min(max(starts, LB), UB), 'rows', 'stable');
+        startsLow = unique(min(max(startsLow, LB), UB), 'rows', 'stable');
+        startsUp = unique(min(max(startsUp, LB), UB), 'rows', 'stable');
+
         % Best-fit isoline
         fun = @(x) misfit_model(x, scenario, tStep, sp, consts, zm, NlogicalRow, obs);
-        % Combine default, warm, and basin-probing starts; keep best misfit.
-        starts = build_starts(scenario, x0, xPrev, LB, UB);
         [sol,exitflag] = optimize_multistart(fun, starts, LB, UB, options);
         if exitflag <= 0
             sol = [nan nan];
@@ -105,10 +128,14 @@ for i = 1:n
             xPrev = sol;
         end
         p1(i,j) = sol(1); p2(i,j) = sol(2);
+        if all(isfinite(sol))
+            [~, predBest] = misfit_model(sol, scenario, tStep, sp, consts, zm, NlogicalRow, obs);
+            misfitBest(j) = max(abs(predBest(:) - obs(:)) ./ max(abs(obs(:)), eps));
+        end
 
         % Lower envelope (obs + sigma)
-        funLow = @(x) misfit_model(x, scenario, tStep, sp, consts, zm, NlogicalRow, obs + sig);
-        startsLow = build_starts(scenario, x0, xPrevLow, LB, UB);
+        targetLow = obs + sig;
+        funLow = @(x) misfit_model(x, scenario, tStep, sp, consts, zm, NlogicalRow, targetLow);
         [solLow,exitflag] = optimize_multistart(funLow, startsLow, LB, UB, options);
         if exitflag <= 0
             solLow = [nan nan];
@@ -116,10 +143,14 @@ for i = 1:n
             xPrevLow = solLow;
         end
         p1low(i,j) = solLow(1); p2low(i,j) = solLow(2);
+        if all(isfinite(solLow))
+            [~, predLow] = misfit_model(solLow, scenario, tStep, sp, consts, zm, NlogicalRow, targetLow);
+            misfitLow(j) = max(abs(predLow(:) - targetLow(:)) ./ max(abs(targetLow(:)), eps));
+        end
 
         % Upper envelope (obs - sigma)
-        funUp = @(x) misfit_model(x, scenario, tStep, sp, consts, zm, NlogicalRow, obs - sig);
-        startsUp = build_starts(scenario, x0, xPrevUp, LB, UB);
+        targetUp = obs - sig;
+        funUp = @(x) misfit_model(x, scenario, tStep, sp, consts, zm, NlogicalRow, targetUp);
         [solUp,exitflag] = optimize_multistart(funUp, startsUp, LB, UB, options);
         if exitflag <= 0
             solUp = [nan nan];
@@ -127,12 +158,15 @@ for i = 1:n
             xPrevUp = solUp;
         end
         p1up(i,j) = solUp(1); p2up(i,j) = solUp(2);
+        if all(isfinite(solUp))
+            [~, predUp] = misfit_model(solUp, scenario, tStep, sp, consts, zm, NlogicalRow, targetUp);
+            misfitUp(j) = max(abs(predUp(:) - targetUp(:)) ./ max(abs(targetUp(:)), eps));
+        end
     end
 
     if strcmp(scenario, 'spike')
-        % At very old ages, large fitted loss implies little/no inherited
-        % inventory remains, so inversion becomes weakly identifiable.
-        cutIdx = detect_spike_cutoff(p2(i,:), p2low(i,:), p2up(i,:), UB(2), spikeLossCutFrac);
+        maxMisfit = max([misfitBest; misfitLow; misfitUp], [], 1);
+        cutIdx = find(maxMisfit > misfitCutFrac, 1, 'first');
         if ~isempty(cutIdx)
             p1(i,cutIdx:end) = nan;
             p2(i,cutIdx:end) = nan;
@@ -153,7 +187,7 @@ p1low(invalid(p1low)) = nan; p2low(invalid(p2low)) = nan;
 end
 
 
-function err = misfit_model(x, scenario, tStep, sp, consts, zm, NlogicalRow, obs)
+function [err, pred] = misfit_model(x, scenario, tStep, sp, consts, zm, NlogicalRow, obs)
 switch scenario
     case 'step'
         pred = Nforward_discretized([x(1) x(2)], tStep, sp, consts, zm, 'step', NlogicalRow);
@@ -165,110 +199,27 @@ err = sum(abs(pred(:) - obs(:)));
 end
 
 
-function [x,exitflag] = optimize_bounded(fun, x0, lb, ub, options)
-u0 = bounded_to_unbounded(x0, lb, ub);
-obj = @(u) fun(unbounded_to_bounded(u, lb, ub));
-[u,~,exitflag] = fminsearch(obj, u0, options);
-x = unbounded_to_bounded(u, lb, ub);
-end
-
-
 function [xBest,exitflagBest] = optimize_multistart(fun, starts, lb, ub, options)
 xBest = [nan nan];
 fBest = inf;
 exitflagBest = -1;
 
 for s = 1:size(starts,1)
-    x0 = starts(s,:);
-    [x,exitflag] = optimize_bounded(fun, x0, lb, ub, options);
+    u0 = bounded_to_unbounded(starts(s,:), lb, ub);
+    obj = @(u) fun(unbounded_to_bounded(u, lb, ub));
+    [u,~,exitflag] = fminsearch(obj, u0, options);
+    x = unbounded_to_bounded(u, lb, ub);
+
     if exitflag <= 0 || any(~isfinite(x))
         continue
     end
+
     fval = fun(x);
     if isfinite(fval) && fval < fBest
         fBest = fval;
         xBest = x;
         exitflagBest = exitflag;
     end
-end
-
-% Return the best valid local minimum among all starts.
-end
-
-
-function starts = build_starts(scenario, xDefault, xPrev, lb, ub)
-switch scenario
-    case 'step'
-        % Include high-E2 and low-E2 seeds to explore both major basins.
-        base = [
-            xDefault
-            xPrev
-            50, 5e3
-            80, 3e4
-            200, 10
-            800, 1
-        ];
-    case 'spike'
-        % Spread seeds across plausible erosion-loss combinations.
-        base = [
-            xDefault
-            xPrev
-            50, 500
-            200, 100
-            800, 20
-        ];
-end
-
-starts = max(base, repmat(lb, size(base,1), 1));
-starts = min(starts, repmat(ub, size(base,1), 1));
-starts = unique(starts, 'rows', 'stable');
-end
-
-
-function cutIdx = detect_spike_cutoff(lossBest, lossLow, lossUp, lossUB, cutFrac)
-lossThresh = cutFrac * lossUB;
-lossHighForUnstable = 0.50 * lossUB;
-jumpDexThresh = 0.35;
-
-% Use any branch crossing threshold as evidence that the spike parameter is
-% saturating and older-age solutions are no longer informative.
-highLoss = (lossBest >= lossThresh) | (lossLow >= lossThresh) | (lossUp >= lossThresh);
-highLoss = highLoss & isfinite(lossBest);
-
-% Secondary trigger: strong oscillations at high inferred loss indicate a
-% weakly constrained old-age tail even before strict saturation is reached.
-unstableHighLoss = false(size(lossBest));
-for j = 3:numel(lossBest)
-    if ~all(isfinite(lossBest(j-2:j)))
-        continue
-    end
-    l0 = max(lossBest(j-2), 1e-8);
-    l1 = max(lossBest(j-1), 1e-8);
-    l2 = max(lossBest(j), 1e-8);
-    d1 = abs(log10(l1) - log10(l0));
-    d2 = abs(log10(l2) - log10(l1));
-    zigzag = sign(lossBest(j) - lossBest(j-1)) ~= sign(lossBest(j-1) - lossBest(j-2));
-    unstableHighLoss(j) = zigzag && ((d1 > jumpDexThresh) || (d2 > jumpDexThresh)) && (lossBest(j) >= lossHighForUnstable);
-end
-
-trigger = highLoss | unstableHighLoss;
-
-cutIdx = [];
-if isempty(trigger)
-    return
-end
-
-% Prefer persistent triggering (2 consecutive ages). If trigger occurs only
-% at the final age, cut there as a fallback.
-for j = 1:(numel(trigger)-1)
-    if trigger(j) && trigger(j+1)
-        cutIdx = j;
-        return
-    end
-end
-
-if trigger(end)
-    cutIdx = numel(trigger);
 end
 end
 
@@ -286,15 +237,3 @@ x = lb + (ub - lb) .* s;
 end
 
 
-function sp = slice_sample_parameters(spAll, idx)
-sp = struct();
-f = fieldnames(spAll);
-for k = 1:numel(f)
-    v = spAll.(f{k});
-    if isnumeric(v) && (isvector(v) && numel(v) == numel(spAll.P10spal))
-        sp.(f{k}) = v(idx);
-    else
-        sp.(f{k}) = v;
-    end
-end
-end

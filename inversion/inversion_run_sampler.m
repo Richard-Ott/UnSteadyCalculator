@@ -5,27 +5,30 @@ lower_bounds = prior_range(:,1);
 upper_bounds = prior_range(:,2);
 
 if samplerCfg.useTargetedStarts
+    % This is mainly useful for samestep models, where some chains can get
+    % stuck on one side of the change=1 ridge. The targeted starts seed
+    % walkers on both sides of that posterior structure.
     mini = apply_targeted_multistart(mini, prior_range, scenario, nsteps);
 end
 
-if samplerCfg.useLogScalePositive
-    logScaleMask = make_logscale_mask(var_names, lower_bounds);
-else
-    logScaleMask = false(size(lower_bounds));
+% Positive lower-bounded parameters are sampled in log space by default.
+logScaleMask = lower_bounds > 0;
+
+nWalks = samplerCfg.nWalks;
+numSamples = samplerCfg.numSamples;
+nParams = size(prior_range, 1);
+
+models = nan(nParams, nWalks, numSamples);
+logLikeStore = -inf(2, nWalks, numSamples);
+accRatio = nan(nWalks, 1);
+endPoints = nan(nParams, nWalks);
+hmcSamplers = cell(nWalks, 1);
+tuningInfo = cell(nWalks, 1);
+
+stepSize = samplerCfg.stepSizeDefault;
+if isfield(samplerCfg, 'stepSizeByScenario') && isfield(samplerCfg.stepSizeByScenario, scenario)
+    stepSize = samplerCfg.stepSizeByScenario.(scenario);
 end
-
-    nWalks = samplerCfg.nWalks;
-    numSamples = samplerCfg.numSamples;
-    nParams = size(prior_range, 1);
-
-    models = nan(nParams, nWalks, numSamples);
-    logLikeStore = -inf(2, nWalks, numSamples);
-    accRatio = nan(nWalks, 1);
-    endPoints = nan(nParams, nWalks);
-    hmcSamplers = cell(nWalks, 1);
-    tuningInfo = cell(nWalks, 1);
-
-    stepSize = get_hmc_step_size(samplerCfg, scenario);
 
 for wix = 1:nWalks
     disp(['running chain ' num2str(wix) ' out of ' num2str(nWalks)])
@@ -82,14 +85,7 @@ end
 
 %% helper functions
 
-function stepSize = get_hmc_step_size(hmcCfg, scenario)
-stepSize = hmcCfg.stepSizeDefault;
-if isfield(hmcCfg, 'stepSizeByScenario') && isfield(hmcCfg.stepSizeByScenario, scenario)
-    stepSize = hmcCfg.stepSizeByScenario.(scenario);
-end
-end
-
-
+% swith between unbounded log space and bounded linear space
 function u = bounded_to_unbounded(m, lower_bounds, upper_bounds, logScaleMask)
 u = zeros(size(m));
 for ix = 1:size(m,1)
@@ -124,8 +120,10 @@ end
 function lpdf = transformed_logpdf(u, lower_bounds, upper_bounds, logScaleMask, logLikeFn)
 m = bounded_from_unbounded(u, lower_bounds, upper_bounds, logScaleMask);
 
-log_sigmoid = -softplus(-u);
-log_one_minus_sigmoid = -softplus(u);
+% Stable evaluation of log(sigmoid(u)) and log(1-sigmoid(u)) without a
+% separate softplus helper.
+log_sigmoid = -(log1p(exp(-abs(-u))) + max(-u,0));
+log_one_minus_sigmoid = -(log1p(exp(-abs(u))) + max(u,0));
 
 log_jacobian_terms = zeros(size(u));
 for ix = 1:size(u,1)
@@ -140,21 +138,6 @@ for ix = 1:size(u,1)
 end
 
 lpdf = logLikeFn(m) + sum(log_jacobian_terms, 'all');
-end
-
-
-function y = softplus(x)
-y = log1p(exp(-abs(x))) + max(x,0);
-end
-
-
-function logScaleMask = make_logscale_mask(var_names, lower_bounds)
-logScaleMask = false(size(lower_bounds));
-for ix = 1:numel(var_names)
-    name = lower(var_names{ix});
-    isPositiveType = startsWith(name, 'e') || contains(name, 'changefactor') || startsWith(name, 'loss');
-    logScaleMask(ix) = isPositiveType && (lower_bounds(ix) > 0);
-end
 end
 
 

@@ -1,8 +1,5 @@
 function [E10,E14,E10up,E10low,E14up,E14low,Ebest,zmbest,hasSolution,fitMisfit] = calc_mixing_depth(SAMS,DEM,zm)
-%CALC_MIXING_DEPTH Search for steady-state erosion rate and mixing depth.
-%
-%   [E10,E14,E10up,E10low,E14up,E14low,Ebest,zmbest,hasSolution,fitMisfit] = ...
-%       calc_mixing_depth(SAMS,DEM,zm)
+%Search for steady-state erosion rate and mixing depth.
 %
 %   This function  assumes constant
 %   erosion through time and asks the following for each sample:

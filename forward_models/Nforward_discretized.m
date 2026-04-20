@@ -12,18 +12,14 @@ function N = Nforward_discretized(E,T,sp,consts,zm,scenario,Nlogical,varargin)
 %       - T: 1 x m vector of step change timings (yrs BP)
 %           from old to young
 %       - sp: sample specific parameters (Pspal & pressure)
-%       - consts: the consts_v3.mat file from Cronus v3
-%       - precalculated muon production rates from Cronus v3 (Nmu.mat)
-%       - type: type of erosion scenario. Either: 
-%               - 'step': step changes in erosion rates with individual
-%               rates per sample
-%               - 'samestep': step changes in erosion with common change
-%               factor
-%               - 'spike': spikes of soil loss
+%       - consts: constants calculated by make_constants function
+%       - scenario: erosion scenario
+%       - Nlogical: a logical table n x 3 that shows which nuclides were
+%       measured for which sample (column order: 10Be, 14C, 26Al)
 %       - varargin: empty for 'step'
 %
 % Output:
-%       - [N10,N14]: concentrations at/g of 10Be and 14C
+%       - [N10,N14,N26]: concentrations at/g of 10Be, 14C, and 26Al
 %
 % Richard Ott & Dirk Scherler, 2024
 

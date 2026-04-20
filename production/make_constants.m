@@ -82,7 +82,7 @@ consts.delrefP_St = [ ...
 % Physical constants used by Nforward_discretized
 % -------------------------------------------------------------------------
 
-consts.density = 2.65;  % g/cm3 -- typical quartz/granite density
-consts.L_sp    = 160;   % g/cm2 -- spallation effective attenuation length
+consts.density = 2.65;  % g/cm3 density
+consts.L_sp    = 160;   % g/cm2 spallation effective attenuation length
 
 end

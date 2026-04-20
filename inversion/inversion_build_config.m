@@ -1,7 +1,10 @@
 function cfg = inversion_build_config(filetag, profile)
-% Build layered defaults for unified inversion runners.
-% filetag = "test" or "yourProjectname"
-% profile = 'quick' , 'robust', 'balanced'
+% Build default inversion settings for the unified HMC runners.
+% filetag = "test" or your project name
+% profile = 'quick', 'balanced', or 'robust'
+% quick    -> fast exploratory runs
+% balanced -> moderate default setting
+% robust   -> long publication-style runs
 
 cfg = struct();
 cfg.filetag = lower(filetag);
@@ -32,7 +35,6 @@ cfg.hmc.stepSizeByScenario = struct( ...
     'samebackground_spike', 0.06, ...
     'samebackground_samespike', 0.06);
 cfg.hmc.logEvalStride = 1;
-cfg.hmc.useLogScalePositive = true;
 cfg.hmc.useTargetedStarts = true;
 
 switch cfg.profile
@@ -55,9 +57,6 @@ switch cfg.profile
 
     case 'balanced'
         % keep defaults
-
-    otherwise
-        error('Unknown profile "%s". Use "quick", "balanced", or "robust".', cfg.profile);
 end
 
 cfg.filetag = [cfg.filetag '_hmc_' cfg.profile];
