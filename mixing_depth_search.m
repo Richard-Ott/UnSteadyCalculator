@@ -42,8 +42,8 @@ nRows = ceil(n / nCols);
 C10 = [0, 92/255, 171/255];
 C14 = [190/255, 30/255, 45/255];
 
-figure('Color', 'w')
-tl = tiledlayout(nRows, nCols, 'TileSpacing', 'compact', 'Padding', 'compact');
+h1 = figure('Color', 'w');
+tl = tiledlayout(nRows, nCols, 'TileSpacing', 'tight', 'Padding', 'tight');
 title(tl, 'Steady-state erosion versus soil mixing depth from ^{10}Be and ^{14}C')
 
 h10 = gobjects(1,1);
@@ -97,13 +97,13 @@ legend([h10 h14 hFit], {'^{10}Be', '^{14}C', 'joint solution'}, 'Location', 'bes
 
 %% SUMMARY PLOT --------------------------------------------------------- %
 
-figure('Color', 'w')
+h2 = figure('Color', 'w');
 hold on
 solved = hasSolution & isfinite(Ebest) & isfinite(zmbest);
 
 if any(solved)
-    scatter(zmbest(solved), Ebest(solved), 45, 'filled', 'MarkerFaceColor', 'k')
-    text(zmbest(solved) + 2, Ebest(solved), short_names(solved), 'FontSize', 8)
+    scatter(zmbest(solved), Ebest(solved), 65, 'filled', 'MarkerFaceColor', 'k')
+    text(zmbest(solved) + 10, Ebest(solved), short_names(solved), 'FontSize', 8)
 end
 
 grid on
@@ -111,9 +111,11 @@ box on
 xlabel('z_m (cm)')
 ylabel('\epsilon (mm/ka)')
 title('Best-fit steady-state erosion rate and mixing depth per sample')
-
+xlim([0 inf])
 if any(~solved)
     unsolvedNames = strjoin(short_names(~solved), newline);
     annotation('textbox', [0.64 0.68 0.3 0.22], 'String', ['No solution found:' newline unsolvedNames], ...
         'FitBoxToText', 'on', 'BackgroundColor', 'w', 'EdgeColor', [0.75 0 0], 'Color', [0.75 0 0]);
 end
+%%
+exportgraphics(h1,'WC_soil_mixing_depth_search.pdf','ContentType','vector');
