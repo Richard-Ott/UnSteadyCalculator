@@ -41,7 +41,7 @@ function [p1,p2,p1up,p1low,p2up,p2low] = calc_isoline(SAMS,DEM,t,scenario)
 
 % Relative misfit threshold used to decide when spike solutions stop being
 % trustworthy. 
-misfitCutFrac = 0.02; % 0.02=  2% mismatch between modelled and observed
+misfitCutFrac = 0.01; % 0.02=  2% mismatch between modelled and observed
 
 % get catchment geometry
 SAMS = cosmowatersheds(SAMS,DEM);
