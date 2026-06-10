@@ -9,11 +9,13 @@ addpath(genpath(pwd))
 
 profile = 'quick';   % Choose algorithm profile: 'quick', 'balanced', or 'robust' for manual adjustment check inversion_build_config.m
 export = false;
-filetag = 'WC';    % Use 'test' to run test scenarios
+filetag = 'Elba';    % Use 'test' to run test scenarios
 
 % files 
-DEM  = GRIDobj('.\data\crete_clipped_utm.tif');
-file = 'data\WCdata_RFO.xlsx'; % AMS data
+% DEM  = GRIDobj('.\data\crete_clipped_utm.tif');
+DEM = GRIDobj('.\data\Elbadem.tif');
+% file = 'data\WCdata_RFO.xlsx'; % AMS data
+file = 'data\Elba_data_.xlsx';
 
 % Prior ranges
 T = [1, 6e3];
@@ -93,8 +95,8 @@ for i = 1:numel(cfg.scenarios)
     %% Plots
     h1 = autocorrelationplot(models);
     h2 = chainplot(models, var_names, prior_range);
-    h3 = ecornerplot(models, 'ks', true, 'color', [.3 .3 .3], ...
-        'name', var_names, 'bestmodel', best_model);
+    % h3 = ecornerplot(models, 'ks', true, 'color', [.3 .3 .3], ...
+    %     'name', var_names, 'bestmodel', best_model);
     h4 = barplot_parameters(models, var_names, prior_range, 'bestmodel', best_model);
     h5 = conc_modelledVSobserved(best_pred, data.N10, data.N10sigma, data.N14, data.N14sigma);
 

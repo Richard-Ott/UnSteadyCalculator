@@ -4,12 +4,9 @@ This toolbox has two main purposes: (1) provide forward models to calculate
 nuclide concentrations for unsteady erosion scenarios, and (2) provide inversion
 schemes to analyze data for these scenarios. The code is currently adapted to work
 for 10Be, 14C, and 26Al nuclide measurements (not all samples need all nuclides).
-All models can be run for a single sample as well as a suite of data. However, 
-the inversion cannot constrain meaningful results for a single sample, because there
-are less data than parameters (run isoline codes scripts for single sample).
-
-The code package also includes function to calculate standard apparent erosion
-rates, and analytical solutions for transient erosion of a single sample.
+All models can be run for a single sample as well as a suite of data. The code 
+package also includes function to calculate standard apparent erosion
+rates.
 
 ## erosion scenarios
 Currently 9 erosion scenarios are supported. There are two main scenario types:
@@ -84,6 +81,9 @@ and hence all parameter combinations follow a line, which this script calculates
 
 * 'Apparent_erosion_rates': Calculates the apparent erosion rates for 10Be, 14C, and 26Al.
 
+* 'Curve_solver_10Be_14C': this script uses the curve scenario and the provided pollen data
+set to find the erosion rate history that scales with the provided curve and fits the data.
+
 ## Inversion sampler
 This toolbox currently uses the MATLAB Hamiltonian Monte Carlo (HMC):
 
@@ -92,8 +92,6 @@ This toolbox currently uses the MATLAB Hamiltonian Monte Carlo (HMC):
 	settings via 'inversion_build_config'.
 
 ## License
-Copyright (C) 2026 Dr. Richard Ott
-
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -107,6 +105,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see
 <https://www.gnu.org/licenses/>.
+
+How to cite:
+Ott, R. F., & Scherler, D. (2026). Unsteady Calculator v1.0 (1.0). Zenodo. 
+https://doi.org/10.5281/zenodo.19942751
 
 References:
 

@@ -15,12 +15,15 @@ addpath(genpath(pwd))
 
 %% USER INPUT ----------------------------------------------------------- %
 
-scenario = 'spike'; % 'step' or 'spike'
+scenario = 'spike'; % 'step' or 'spike' 
 
 dataFile = 'data\WCdata_RFO.xlsx';
 demFile = '.\data\crete_clipped_utm.tif';
+% dataFile = 'data\Elba_data_.xlsx';
+% demFile = '.\data\Elbadem.tif';
 
-t = 1e2:2e2:1e4;              % years since step/spike event
+
+t = 1e2:1e2:1e4;              % years since step/spike event
 
 %% LOAD DATA ------------------------------------------------------------ %
 
@@ -36,7 +39,7 @@ DEM = GRIDobj(demFile);
 % back in time, you won;t be able to constrain a solution. Here I
 % discard all of these values
 if strcmp(scenario, 'spike')
-    maxLossCm = 1000;
+    maxLossCm = 1e6;
     for i = 1:size(p2,1)
         exceed = (p2(i,:) > maxLossCm) | (p2up(i,:) > maxLossCm) | (p2low(i,:) > maxLossCm);
         firstBad = find(exceed, 1, 'first');
@@ -69,12 +72,11 @@ switch scenario
 
             indsUp = isfinite(ratioUp);
             indsLow = isfinite(ratioLow);
-            if any(indsUp) && any(indsLow)
-                f = fill([t(indsUp), fliplr(t(indsLow))], ...
-                    [ratioUp(indsUp), fliplr(ratioLow(indsLow))], ...
-                    cc(i,:), 'FaceAlpha', 0.25, 'EdgeColor', 'none');
-                set(get(get(f,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-            end
+  
+            f = fill([t(indsUp), fliplr(t(indsLow))], ...
+                [ratioUp(indsUp), fliplr(ratioLow(indsLow))], ...
+                cc(i,:), 'FaceAlpha', 0.25, 'EdgeColor', 'none');
+            set(get(get(f,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         end
 
         xlabel('years since step change')
@@ -88,10 +90,22 @@ switch scenario
             subplot(1,2,1)
             plot(t, p2(i,:), '-', 'Color', cc(i,:), 'LineWidth', 1.5)
             hold on
+            indsUp = isfinite(p2up(i,:)); 
+            indsLow = isfinite(p2low(i,:));
+            f1 = fill([t(indsUp), fliplr(t(indsUp))], ...
+                [p2up(i,indsUp), fliplr(p2low(i,indsLow))], ...
+                cc(i,:), 'FaceAlpha', 0.25, 'EdgeColor', 'none');
+            set(get(get(f1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
             subplot(1,2,2)
             plot(t, p1(i,:), '-', 'Color', cc(i,:), 'LineWidth', 1.5)
             hold on
+            indsUp = isfinite(p1up(i,:)); 
+            indsLow = isfinite(p1low(i,:)); 
+            f2 = fill([t(indsUp), fliplr(t(indsUp))], ...
+                [p1up(i,indsUp), fliplr(p1low(i,indsLow))], ...
+                cc(i,:), 'FaceAlpha', 0.25, 'EdgeColor', 'none');
+            set(get(get(f2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         end
 
         subplot(1,2,1)
@@ -109,3 +123,6 @@ switch scenario
 end
 
 % ylim([0 350])
+%%
+set(gcf, 'PaperOrientation', 'portrait');
+print(gcf, 'Isolines_WC_spike.pdf', '-dpdf', '-vector', '-bestfit');
