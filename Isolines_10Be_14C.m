@@ -15,7 +15,7 @@ zm = 31;              % soil mixing depth in cm (0 = no mixing)
 dataFile = 'data\WCdata_RFO.xlsx';
 demFile = '.\data\crete_clipped_utm.tif';
 
-t = 1e2:2e2:1e4;      % years since step/spike event
+t = 1e2:1e2:1e4;      % years since step/spike event
 
 %% LOAD DATA ------------------------------------------------------------ %
 
@@ -63,10 +63,22 @@ switch scenario
             subplot(1,2,1)
             plot(t, p2(i,:), '-', 'Color', cc(i,:), 'LineWidth', 1.5)
             hold on
+            indsUp = isfinite(p2up(i,:)); 
+            indsLow = isfinite(p2low(i,:));
+            f1 = fill([t(indsUp), fliplr(t(indsUp))], ...
+                [p2up(i,indsUp), fliplr(p2low(i,indsLow))], ...
+                cc(i,:), 'FaceAlpha', 0.25, 'EdgeColor', 'none');
+            set(get(get(f1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
             subplot(1,2,2)
             plot(t, p1(i,:), '-', 'Color', cc(i,:), 'LineWidth', 1.5)
             hold on
+            indsUp = isfinite(p1up(i,:)); 
+            indsLow = isfinite(p1low(i,:)); 
+            f2 = fill([t(indsUp), fliplr(t(indsUp))], ...
+                [p1up(i,indsUp), fliplr(p1low(i,indsLow))], ...
+                cc(i,:), 'FaceAlpha', 0.25, 'EdgeColor', 'none');
+            set(get(get(f2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         end
 
         subplot(1,2,1)
@@ -82,3 +94,6 @@ switch scenario
         labels = {SAMS.ID};
         legend(labels, 'Interpreter', 'none', 'Location', 'best')
 end
+%%
+set(gcf, 'PaperOrientation', 'portrait');
+print(gcf, 'Isolines_WC_step_soilmixing.pdf', '-dpdf', '-vector', '-bestfit');
