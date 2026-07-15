@@ -22,7 +22,6 @@ demFile = '.\data\crete_clipped_utm.tif';
 % dataFile = 'data\Elba_data_.xlsx';
 % demFile = '.\data\Elbadem.tif';
 
-
 t = 1e2:1e2:1e4;              % years since step/spike event
 
 %% LOAD DATA ------------------------------------------------------------ %
@@ -62,6 +61,7 @@ switch scenario
     case 'step'
         labels = {SAMS.ID};
         figure()
+        subplot(1,2,1)    % plot erosion ratio
         for i = 1:numel(SAMS)
             ratio = p2(i,:) ./ p1(i,:);
             ratioUp = p2up(i,:) ./ p1up(i,:);
@@ -83,17 +83,43 @@ switch scenario
         ylabel('E2 / E1')
         title('Step-change isolines from 10Be-14C')
         legend(labels, 'Interpreter', 'none', 'Location', 'best')
+        ylim([0 300])
+
+        subplot(1,2,2)    % plot initial erosion rate
+        for i = 1:numel(SAMS)
+
+            plot(t, p1(i,:), '-', 'Color', cc(i,:), 'LineWidth', 1.5)
+            hold on
+
+            indsUp = isfinite(p1up(i,:));
+            indsLow = isfinite(p1low(i,:));
+  
+            f = fill([t(indsUp), fliplr(t(indsLow))], ...
+                [p1up(i,indsUp), fliplr(p1low(i,indsLow))], ...
+                cc(i,:), 'FaceAlpha', 0.25, 'EdgeColor', 'none');
+            set(get(get(f,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        end
+
+        xlabel('years since step change')
+        ylabel('E1')
+        title('Step-change isolines from 10Be-14C')
+        legend(labels, 'Interpreter', 'none', 'Location', 'best')
+        ylim([0 100])
 
     case 'spike'
+
+        soil_density = 1.5; % assumed soil density for conversion from bedrock to soil density
+        soil_conversion = 2.65/soil_density;
+
         figure()
         for i = 1:numel(SAMS)
             subplot(1,2,1)
-            plot(t, p2(i,:), '-', 'Color', cc(i,:), 'LineWidth', 1.5)
+            plot(t, p2(i,:).*soil_conversion, '-', 'Color', cc(i,:), 'LineWidth', 1.5)
             hold on
             indsUp = isfinite(p2up(i,:)); 
             indsLow = isfinite(p2low(i,:));
             f1 = fill([t(indsUp), fliplr(t(indsUp))], ...
-                [p2up(i,indsUp), fliplr(p2low(i,indsLow))], ...
+                [p2up(i,indsUp).*soil_conversion, fliplr(p2low(i,indsLow).*soil_conversion)], ...
                 cc(i,:), 'FaceAlpha', 0.25, 'EdgeColor', 'none');
             set(get(get(f1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -110,7 +136,7 @@ switch scenario
 
         subplot(1,2,1)
         xlabel('years since spike')
-        ylabel('Loss (cm)')
+        ylabel('Loss (cm, soil density)')
         title('Spike isolines: loss')
 
         subplot(1,2,2)
@@ -120,9 +146,10 @@ switch scenario
 
         labels = {SAMS.ID};
         legend(labels, 'Interpreter', 'none', 'Location', 'best')
+        ylim([0 1500])
 end
 
 % ylim([0 350])
 %%
 set(gcf, 'PaperOrientation', 'portrait');
-print(gcf, 'Isolines_WC_spike.pdf', '-dpdf', '-vector', '-bestfit');
+print(gcf, 'Isolines_WC_spike_soildensity.pdf', '-dpdf', '-vector', '-bestfit');
